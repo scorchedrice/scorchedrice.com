@@ -9,7 +9,6 @@ const TagSection = ({tagMapData} : {tagMapData : Map<string, string[]>}) => {
     <>
       {/* TODO : 선택한 경우, 해당 태그를 포함한 게시글이 나오도록한다. 또, 해당 태그를 선택했다면 선택한 표시를 하도록한다.*/}
       {/* Zustand로 선택된 태그들을 관리한다. */}
-      <Separator orientation="vertical"/>
       <div id="sidebar" className="flex flex-col w-full p-4">
         <div className="flex text-[24px] underline items-center">
           <Tag/>

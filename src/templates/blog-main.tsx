@@ -4,14 +4,22 @@ import Layout from "../widgets/layout/layout";
 import {GatsbyImage, getImage} from "gatsby-plugin-image";
 import {Separator} from "@/components/ui/separator";
 import CategoryButton from "@/widgets/home/CategoryButton";
-import {useSelectedCategory} from "@/shared/stores/useCategorySelectStore";
-import TagSection from "@/widgets/home/TagSection";
+import RightSide from "@/widgets/home/RightSide";
+import Profile from "@/widgets/home/Profile";
 
-const IndexPage: React.FC<PageProps> = ({data} : {data: any}) => {
-  const selectedCategory = useSelectedCategory();
-  const postNodes = selectedCategory === "전체" ? data.allMdx.nodes : data.allMdx.nodes.filter((node) => node.frontmatter.category === selectedCategory);
+type BlogPageContext = {
+  category: string;
+  currentPage: number;
+  totalPages: number;
+}
+
+const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, pageContext}) => {
+  const isAll = pageContext.category === "전체";
+  const postNodes = isAll
+    ? data.allMdxUnfiltered.nodes
+    : data.allMdxFiltered.nodes;
   const tagsMap = new Map();
-  for (const node of data.allMdx.nodes) {
+  for (const node of postNodes) {
     const category = node.frontmatter.category;
     const tags = node.frontmatter.tags;
     if (tagsMap.has(category)) {
@@ -23,18 +31,15 @@ const IndexPage: React.FC<PageProps> = ({data} : {data: any}) => {
   }
   return (
     <Layout>
-      <div className="w-full max-w-[1200px] mx-auto h-[200px] flex justify-center items-center p-4">
-        <div className="rounded-3xl bg-blue-300 w-full h-full flex justify-center items-center">
-          <span className="text-[32px] font-bold">이음블로그</span>
-        </div>
+      <div className="w-full max-w-[1200px] mx-auto h-[200px] flex items-center p-4">
+        <Profile/>
       </div>
       <main className="w-full flex max-w-[1200px] min-h-[100dvh] mx-auto">
         <section id="post_list" className="w-full md:w-2/3 p-4">
           <div className="w-full flex" id="categories">
             <CategoryButton categoryName="전체"/>
-            <CategoryButton categoryName="세차"/>
-            <CategoryButton categoryName="청소"/>
             <CategoryButton categoryName="개발"/>
+            <CategoryButton categoryName="프로젝트"/>
           </div>
           <Separator/>
           {/*여기서부터 리스트로 포스트를 표시하는 공간.*/}
@@ -72,42 +77,68 @@ const IndexPage: React.FC<PageProps> = ({data} : {data: any}) => {
                   </div>
                   <div className="text-[12px] font-light text-gray-500">{date} · {category}</div>
                 </div>
-                <GatsbyImage alt="test" image={gatsby_image} className="ml-2 w-[100px] h-[80px] shrink-0"/>
+                {
+                  gatsby_image && (
+                    <GatsbyImage alt="test" image={gatsby_image} className="ml-2 w-[100px] h-[80px] shrink-0"/>
+                  )
+                }
               </Link>
             )
           })}
         </section>
         <section className="hidden md:w-1/3 md:flex md:p-4">
-          <TagSection tagMapData={tagsMap} />
+          <RightSide tagMapData={tagsMap} />
         </section>
       </main>
+      <div>
+        Pagination Section
+      </div>
     </Layout>
   )
 }
 
 export const query = graphql`
-  query {
-    allMdx(sort: { frontmatter: { date: DESC }}) {
+  query BlogPageQuery($skip: Int!, $limit: Int!, $category: String!) {
+    allMdxFiltered: allMdx(
+      filter: { frontmatter: { category: { eq: $category } } }
+      skip: $skip
+      limit: $limit
+      sort: { frontmatter: { date: DESC } }
+    ) {
       nodes {
-        frontmatter {
-          date(formatString: "YYYY-MM-DD")
-          title
-          category
-          slug
-          tags
-          hero_image {
-          childImageSharp {
-            gatsbyImageData
-          }
-        }
-        }
-        id
-        excerpt(pruneLength: 50)
+        ...CommonFields
+      }
+    }
+    allMdxUnfiltered: allMdx(
+      skip: $skip
+      limit: $limit
+      sort: { frontmatter: { date: DESC } }
+    ) {
+      nodes {
+        ...CommonFields
       }
     }
   }
-`
 
-export default IndexPage
+  fragment CommonFields on Mdx {
+    id
+    excerpt(pruneLength: 50)
+    frontmatter {
+      title
+      slug
+      date(formatString: "YYYY-MM-DD")
+      category
+      tags
+      hero_image {
+        childImageSharp {
+          gatsbyImageData(width: 100, height: 80)
+        }
+      }
+    }
+  }
+`;
+
+
+export default BlogPageTemplate
 
 export const Head: HeadFC = () => <title>Home Page</title>

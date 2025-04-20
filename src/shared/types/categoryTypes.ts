@@ -1,1 +1,1 @@
-export type CategoryType = "전체"|"세차"|"청소"|"개발"
+export type CategoryType = "전체"|"개발"|"프로젝트"

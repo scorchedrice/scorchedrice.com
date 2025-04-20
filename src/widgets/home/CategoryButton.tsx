@@ -1,17 +1,26 @@
 import * as React from "react";
-import {Button} from "@/components/ui/button";
-import {useSelectedCategory, useSetSelectedCategory} from "@/shared/stores/useCategorySelectStore";
 import {CategoryType} from "@/shared/types/categoryTypes";
+import {Link} from "gatsby";
 
 export default function CategoryButton({categoryName} : {categoryName: CategoryType}) {
-  const selectedCategory = useSelectedCategory();
-  const setSelectedCategory = useSetSelectedCategory();
+  let categoryUrl;
+  switch (categoryName) {
+    case "개발":
+      categoryUrl = "/category/develop/page/1"
+      break
+    case "프로젝트":
+      categoryUrl = "/category/project/page/1"
+      break;
+    default:
+      categoryUrl = "/"
+      break;
+  }
   return (
-    <Button
-      className={`mx-1 bg-transparent border-0 shadow-transparent ${selectedCategory === categoryName ? 'text-[#02DBC6]' : 'text-black'} hover:bg-gray-200`}
-      onClick={() => setSelectedCategory(categoryName)}
+    <Link
+      to={categoryUrl}
+      className={`mx-1 bg-transparent border-0 shadow-transparent} hover:bg-gray-200`}
     >
       {categoryName}
-    </Button>
+    </Link>
   )
 }
