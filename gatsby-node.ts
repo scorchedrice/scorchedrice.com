@@ -18,10 +18,6 @@ export const onCreateWebpackConfig = ({ actions }) => {
 
 export const createPages : GatsbyNode["createPages"] = async ({ graphql, actions }) => {
   const { createPage } = actions;
-  const categoryUrl = {
-    개발: "develop",
-    프로젝트: "project"
-  }
   const blogTemplate = path.resolve("src/templates/blog-main.tsx");
   const results = await graphql(`
   query AllPostsForPagination {
@@ -41,8 +37,11 @@ export const createPages : GatsbyNode["createPages"] = async ({ graphql, actions
   const posts = results.data.allMdx.nodes;
   const postsPerPage = 10;
   const categoryMap: Record<string, typeof posts> = {};
-
   const targetCategories = ["전체", "개발", "프로젝트"];
+  const categoryUrl = {
+    "개발": "develop",
+    "프로젝트": "project",
+  }
 
   for (const category of targetCategories) {
     categoryMap[category] = posts.filter(

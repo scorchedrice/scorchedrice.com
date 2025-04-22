@@ -1,4 +1,5 @@
 import * as React from "react"
+import "../global.css";
 import {graphql, HeadFC, Link, PageProps} from "gatsby"
 import Layout from "../widgets/layout/layout";
 import {GatsbyImage, getImage} from "gatsby-plugin-image";
@@ -6,6 +7,7 @@ import {Separator} from "@/components/ui/separator";
 import CategoryButton from "@/widgets/home/CategoryButton";
 import RightSide from "@/widgets/home/RightSide";
 import Profile from "@/widgets/home/Profile";
+import Pagination from "@/widgets/home/Pagination";
 
 type BlogPageContext = {
   category: string;
@@ -19,7 +21,7 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
     ? data.allMdxUnfiltered.nodes
     : data.allMdxFiltered.nodes;
   const tagsMap = new Map();
-  for (const node of postNodes) {
+  for (const node of data.allMdxUnfiltered.nodes) {
     const category = node.frontmatter.category;
     const tags = node.frontmatter.tags;
     if (tagsMap.has(category)) {
@@ -79,20 +81,20 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
                 </div>
                 {
                   gatsby_image && (
-                    <GatsbyImage alt="test" image={gatsby_image} className="ml-2 w-[100px] h-[80px] shrink-0"/>
+                    <GatsbyImage alt="test" image={gatsby_image} className="ml-2 w-[100px] h-[100px] rounded-lg"/>
                   )
                 }
               </Link>
             )
           })}
         </section>
-        <section className="hidden md:w-1/3 md:flex md:p-4">
-          <RightSide tagMapData={tagsMap} />
-        </section>
+        <RightSide tagMapData={tagsMap} />
       </main>
-      <div>
-        Pagination Section
-      </div>
+      <Pagination
+        currentPage={pageContext.currentPage}
+        totalPages={pageContext.totalPages}
+        category={pageContext.category}
+      />
     </Layout>
   )
 }
@@ -131,7 +133,7 @@ export const query = graphql`
       tags
       hero_image {
         childImageSharp {
-          gatsbyImageData(width: 100, height: 80)
+          gatsbyImageData
         }
       }
     }
