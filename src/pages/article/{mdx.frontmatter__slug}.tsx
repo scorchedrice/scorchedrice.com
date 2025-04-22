@@ -10,18 +10,26 @@ const BlogPost = ({ data, children } : { data : any, children : any }) => {
   const image = getImage(frontmatter.hero_image);
   const title = frontmatter.title;
   const date = frontmatter.date;
+  const tags = frontmatter.tags.map((tag : string) => `#${tag}`);
+  const category = frontmatter.category;
   return (
     <Layout>
-      <main className="flex flex-col items-start max-w-[800px] mx-auto p-4 min-h-[100dvh]">
-        <div className="mdx-content my-2">
-          <h1 className="font-bold">{title}</h1>
-          <span className="font-light text-gray-500">{date}</span>
+      <main className="flex flex-col max-w-[800px] mx-auto p-4 min-h-[100dvh]">
+        <span>🚀 {category}</span>
+        <div className="w-full flex justify-center items-start mdx-content h-[200px]">
+          <GatsbyImage
+            image={image}
+            alt={data.mdx.frontmatter.hero_image_alt}
+            className="size-[100px] m-6"
+          />
+          <div className="my-2 flex flex-col items-end">
+            <h1 className="font-bold">{title}</h1>
+            <div>
+              <span className="font-light mr-2">{tags.join(', ')},</span>
+              <span className="font-light text-gray-500">{date}</span>
+            </div>
+          </div>
         </div>
-        <GatsbyImage
-          image={image}
-          alt={data.mdx.frontmatter.hero_image_alt}
-          className="w-[full] mx-auto max-w-[300px] h-auto"
-        />
         <section className="mdx-content w-full mx-auto">
           {children}
         </section>
@@ -39,6 +47,8 @@ export const query = graphql`
         hero_image_alt
         hero_image_credit_link
         hero_image_credit_text
+        category
+        tags
         hero_image {
           childImageSharp {
             gatsbyImageData
