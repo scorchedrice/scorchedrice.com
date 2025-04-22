@@ -15,12 +15,12 @@ const BlogPost = ({ data, children } : { data : any, children : any }) => {
   return (
     <Layout>
       <main className="flex flex-col max-w-[800px] mx-auto p-4 min-h-[100dvh]">
-        <span>🚀 {category}</span>
-        <div className="w-full flex justify-center items-start mdx-content h-[200px]">
+        <span className="text-[12px] text-gray-500 md:text-[20px]">📂 {category}</span>
+        <div className="w-full flex flex-col md:flex-row justify-center items-center md:items-start mdx-content">
           <GatsbyImage
             image={image}
             alt={data.mdx.frontmatter.hero_image_alt}
-            className="size-[100px] m-6"
+            className="size-[100px] m-6 shrink-0"
           />
           <div className="my-2 flex flex-col items-end">
             <h1 className="font-bold">{title}</h1>

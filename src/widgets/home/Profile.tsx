@@ -5,7 +5,7 @@ import {Link} from "gatsby";
 export default function Profile() {
   return (
     <>
-      <div className="rounded-full size-[100px] overflow-hidden">
+      <div className="rounded-full size-[100px] overflow-hidden shrink-0">
         <StaticImage src="../../shared/assets/profile.jpg" alt="profileImage"/>
       </div>
       <div className="flex flex-col ml-4">

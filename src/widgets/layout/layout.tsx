@@ -13,8 +13,17 @@ export default function Layout({ children } : { children : React.ReactNode }) {
       <div>
         {children}
       </div>
-      <footer className="w-[100dvw] h-[50px] bg-green-300">
-        <div>홍익대학교 신소재공학 전공</div>
+      <footer className="w-[100dvw] bg-gray-200 flex flex-col p-4 items-center justify-center mt-4">
+        <div>
+          <span>한지웅</span>
+          <Link to="https://github.com/scorchedrice" className="m-4 hover:underline">Github</Link>
+          <Link to="mailto:wldnd2977@gmail.com" className="hover:underline">wldnd2977@gmail.com</Link>
+        </div>
+        <div className="flex flex-col m-2">
+          <span>HONGIK UNIV.</span>
+          <span>MATERIAL SCIENCE & ENGINEERING 17</span>
+        </div>
+        <span className="m-4">2025. Han Ji Woong. All rights reserved.</span>
       </footer>
     </>
   )

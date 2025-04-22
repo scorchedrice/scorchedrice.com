@@ -65,8 +65,8 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
               >
                 <div className="h-full flex flex-col justify-between">
                   <div>
-                    <h1 className="text-[20px] font-bold mb-2">{title}</h1>
-                    <span className="text-[14px]">{excerpt}</span>
+                    <h1 className="text-[16px] md:text-[20px] font-bold mb-2">{title}</h1>
+                    <span className="text-[12px] md:text-[14px]">{excerpt}</span>
                     <div className="flex my-2">
                       {tags.map((tag : string) => {
                         return (
@@ -81,7 +81,7 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
                 </div>
                 {
                   gatsby_image && (
-                    <GatsbyImage alt="test" image={gatsby_image} className="ml-2 w-[100px] h-[100px] rounded-lg"/>
+                    <GatsbyImage alt="test" image={gatsby_image} className="ml-2 w-[100px] h-[100px] shrink-0 rounded-lg"/>
                   )
                 }
               </Link>
