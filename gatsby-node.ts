@@ -1,7 +1,9 @@
 import * as path from "path"
 import {GatsbyNode} from "gatsby";
+import {AllPostsQueryResult} from "@/shared/types/graphqlTypes";
+import fs from "fs-extra";
 
-export const onCreateWebpackConfig = ({ actions }) => {
+export const onCreateWebpackConfig: GatsbyNode["onCreateWebpackConfig"] = ({ actions }) => {
   actions.setWebpackConfig({
     resolve: {
       alias: {
@@ -19,13 +21,21 @@ export const onCreateWebpackConfig = ({ actions }) => {
 export const createPages : GatsbyNode["createPages"] = async ({ graphql, actions }) => {
   const { createPage } = actions;
   const blogTemplate = path.resolve("src/templates/blog-main.tsx");
-  const results = await graphql(`
+  const results = await graphql<AllPostsQueryResult>(`
   query AllPostsForPagination {
     allMdx(sort: { frontmatter: { date: DESC } }) {
       nodes {
         frontmatter {
           category
           slug
+          title
+          date(formatString: "YYYY-MM-DD")
+          hero_image_alt
+          hero_image {
+            childImageSharp {
+              gatsbyImageData
+            }
+          }
         }
         id
       }
@@ -52,7 +62,7 @@ export const createPages : GatsbyNode["createPages"] = async ({ graphql, actions
   for (const [category, postList] of Object.entries(categoryMap)) {
     const totalPages = Math.ceil(postList.length / postsPerPage);
 
-    console.log(`\n[${category}] 총 ${postList.length}개의 글, 총 ${totalPages}페이지 생성`);
+    // console.log(`\n[${category}] 총 ${postList.length}개의 글, 총 ${totalPages}페이지 생성`);
 
     for (let i = 0; i < totalPages; i++) {
       const isFirstPage = i === 0;
@@ -61,7 +71,7 @@ export const createPages : GatsbyNode["createPages"] = async ({ graphql, actions
         ? isFirstPage
           ? "/"
           : `/page/${i + 1}`
-        : `/category/${categoryUrl[category]}/page/${i + 1}`;
+        : `/category/${categoryUrl[category as keyof typeof categoryUrl]}/page/${i + 1}`;
 
       console.log(`페이지 생성: ${pathStr}`);
 
@@ -78,4 +88,8 @@ export const createPages : GatsbyNode["createPages"] = async ({ graphql, actions
       });
     }
   }
+
+  // page를 생성할 때, JSON 파일도 생성 => 이를 search에 활용
+  const searchIndexPath = path.join("public", "search-index.json");
+  await fs.outputJSON(searchIndexPath, posts);
 }

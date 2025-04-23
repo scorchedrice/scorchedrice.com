@@ -1,7 +1,7 @@
 import * as React from 'react';
-import "../../global.css";
 import {Link} from "gatsby";
 import ThemeToggle from "@/widgets/theme/ThemeToggle";
+import {Search} from "lucide-react";
 
 export default function Layout({ children } : { children : React.ReactNode }) {
   return (
@@ -10,7 +10,12 @@ export default function Layout({ children } : { children : React.ReactNode }) {
         <Link to="/" className="flex items-center font-bold text-[24px]">
           <span>scorchedrice.com</span>
         </Link>
-        <ThemeToggle/>
+        <div className="flex items-center">
+          <Link to="/search">
+            <Search className="m-4"/>
+          </Link>
+          <ThemeToggle/>
+        </div>
       </nav>
       <div>
         {children}

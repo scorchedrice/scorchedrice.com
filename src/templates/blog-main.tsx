@@ -9,6 +9,7 @@ import RightSide from "@/widgets/home/RightSide";
 import Profile from "@/widgets/home/Profile";
 import Pagination from "@/widgets/home/Pagination";
 import TagButton from "@/widgets/home/TagButton";
+import {BlogMainType} from "@/shared/types/graphqlTypes";
 
 type BlogPageContext = {
   category: string;
@@ -46,7 +47,7 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
           </div>
           <Separator/>
           {/*여기서부터 리스트로 포스트를 표시하는 공간.*/}
-          {postNodes.map((node) => {
+          {postNodes.map((node: BlogMainType) => {
             const excerpt = node.excerpt;
             const frontmatter = node.frontmatter;
             const category = frontmatter.category;
