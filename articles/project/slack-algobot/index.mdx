@@ -10,6 +10,8 @@ hero_image_credit_text: "프로그래머스 데브코스 사용자분들을 위�
 hero_image_credit_link: ""
 ---
 
+import slackBotLogic1 from "./slack-bot-logic1.png";
+
 프로그래머스 데브코스 분들을 위한 슬랙봇을 개발한 과정을 소개하려고해요. 왜 이 프로젝트를 시작했는지부터, 어떤 방식으로 구현했는지 까지 소개할게요.
 
 <hr/>
@@ -18,7 +20,6 @@ hero_image_credit_link: ""
 <ul>
   <li>프로젝트를 진행하게 된 이유</li>
   <li>슬랙봇 구현 과정</li>
-  <li>동작 과정 설명</li>
 </ul>
 
 <hr/>
@@ -51,17 +52,21 @@ hero_image_credit_link: ""
 그렇기 때문에 개발을 자바스크립트로 처음 시작하신 분들이 코딩테스트에 느끼는 벽이 정말 높을 것이라고 생각했어요.
 개인적으로 코딩테스트 언어를 파이선에서 자바스크립트로 전환하는 과정에서 파이선에선 쉽게 구현했던 기능들이 자바스크립트에선 불가능하여 하나하나 구현해야하는 어려움을 겪은 경험이 있었기에 이 어려움을 해결하는 프로그램을 개발해보고 싶었어요.
 
+그래서, "어? 이 문제 OO자료구조를 요구하는 문제같은데? 근데, 이걸 어떻게 구현해야할까?" 이런 고민이 들 때 활용할 수 있는 힌트를 제공하는 것을 목적으로 개발을 진행했어요.
+
 <details>
   <summary>/sample-code heap을 실행한 결과</summary>
 
   ![sample](./samplecode-heap.png)
 </details>
 
+이 기능은 위의 실행 결과를 보면 알 수 있듯, 알고리즘에 대한 간략한 설명과 예시코드를 제공해요. 많은 도움이 되었으면 좋겠네요. :)
+
+<br/>
+
 #### 두번째, 알고리즘 문제 추천
 
 코딩테스트 대비를 목적으로 알고리즘 스터디를 진행하고 계신 수강생분들에게 도움을 드리고 싶었어요. 문제 난이도와 문제를 푼 사람 수, 정답률을 선택하면 이에 맞게 문제를 추천할 수 있는 기능을 구현했어요.
-
-이 기능을 활용해서 스터디장분들이 문제를 선정하는 과정을 빠르게 할 수 있도록 도움드리고 싶었어요.
 
 <details>
   <summary>알고리즘 문제 추천 결과</summary>
@@ -69,10 +74,129 @@ hero_image_credit_link: ""
   ![algobot example](./algobot-example.png)
 </details>
 
+이 기능을 활용해서 스터디장분들이 문제를 선정하는 과정을 빠르게 할 수 있도록 도움드리고 싶었어요.
+
 <hr/>
 
 ### 2. 슬랙봇 구현과정
 
-슬랙봇이 동작하는 과정은 크게 <u>**slack에서 입력한 슬래시 명령어를 처리하는 command**</u>, <u>**버튼 클릭과 같은 이벤트를 처리하는 handler**</u>, <u>**비즈니스 로직을 처리하는 service**</u>로 동작해요.
+슬랙봇의 구성은 크게 <u>**slack에서 입력한 슬래시 명령어를 처리하는 command**</u>, <u>**버튼 클릭과 같은 이벤트를 처리하는 handler**</u>, <u>**비즈니스 로직을 처리하는 service**</u>로 구성되어 있어요.
 
-..여기서부턴 개발이 완료된 이후 예시코드와 함께 작성.
+#### 첫번째, 슬래시 명령어를 처리하는 과정
+
+<img src={slackBotLogic1} alt="test" className="mx-auto"/>
+
+슬랙봇이 동작하는 과정 첫번째는 위의 이미지와 같아요. **main.js**는 슬랙봇의 명령어 진입 지점이라고 볼 수 있고, 진입한 이후엔 슬래시 명령어에 맞는 **command.js** 로직을 실행시켜요.
+
+<details>
+  <summary>예시코드 (command.js)</summary>
+
+  ```js
+  const service = require('./service');
+  const {chooseAlgorithm} = require("./service");
+
+  function algoBot(app) {
+    // sample-code 슬래시 명령어를 입력한 경우 실행될 함수
+    app.command('/sample-code', async ({ command, ack, say }) => {
+      await ack();
+      const dataStructure = command.text.trim().toLowerCase(); // 뒤에 추가로 입력한 명령어
+      const example = chooseAlgorithm(dataStructure); // 이에 해당하는 알고리즘을 가져옴
+      await say({
+        // ... slack에 나타날 텍스트, UI를 정의
+      })
+    })
+    app.command('/algobot', async ({command, ack, say}) => {
+      await ack();
+      const order = command.text.trim().toLowerCase(); // 뒤에 추가로 입력한 명령어
+      if (order === 'recommend') {
+        await say({
+          // recommend란 명령어가 발생하면 보여줄 텍스트와 UI
+        })
+      } else {
+        // recommend 명령이 아닌 경우 진행될 로직이에요.
+      }
+    })
+  }
+
+  module.exports = { algoBot };
+  ```
+</details>
+
+#### 두번째, 사용자가 조작하는 버튼 등의 이벤트 관리
+
+![slack-bot-recommend-example1](./slack-bot-recommend-example1.png)
+
+개발한 알고리즘 문제 추천 기능엔 버튼 조작 이벤트가 많이 있어요. 이와 같은 이벤트들은 **handler.js**에서 관리해요.
+
+이벤트가 발생해야하는 것들은 **action**타입의 버튼들로 구성되어있고, 이벤트가 발생할 때 마다 **handler.js**에 있는 처리함수에 요청을 보내요.
+
+<br/>
+
+위 이미지 중 난이도 선택을 예시로 과정을 설명해볼게요.
+
+<details>
+  <summary>난이도 선택 버튼 구현 예시 코드</summary>
+
+    ```js
+    {
+      type: 'actions',
+      elements: [
+    {
+      type: 'static_select',
+      action_id: 'select_difficulty',
+      placeholder: {
+      type: "plain_text",
+      text: "난이도 선택 (0 - 5)"
+    },
+      options: [0, 1, 2, 3, 4, 5].map((level) => ({
+      text: {
+      type: 'plain_text',
+      text: `${level}`
+    },
+      value: `difficulty_${level}`
+    }))
+    },
+      // UI ..
+      ]
+    }
+    ```
+</details>
+
+<details>
+  <summary>handler.js 해당 이벤트 처리 함수</summary>
+
+  ```js
+  function selectDifficulty(app) {
+    app.action('select_difficulty', async ({ body, ack, say }) => {
+      await ack();
+      const userId = body.user.id;
+      const selected = body.actions[0].selected_option.value;
+      userSelection[userId] = { ...(userSelection[userId] || {}), difficulty: selected };
+    })
+  }
+  ```
+</details>
+
+사용자가 보는 버튼과 이를 처리하는 handler 함수는 위와 같이 구현되어있어요.
+
+다른 버튼들 모두 이벤트가 발생하면 value값을 해당 action_id를 가지고 있는 handler.js의 특정 함수에 전달해요.
+전달받은 함수는 이 value값을 바탕으로 연산을 진행해요.
+
+알고리즘 문제 추천 기능의 경우 사용자가 난이도, 정답률, 풀이 수를 선택할 때 마다 이를 저장하고 있다가 3가지를 모두 선택한 경우에만 결과를 반환할 수 있는 기능을 구현했어요.
+
+#### 세번째, 핵심 동작을 수행하는 service
+
+**service.js**는 슬랙봇의 핵심 기능을 담당해요. 문제추천 기능의 경우 조건에 맞게 필터링하는 동작이 여기에 해당해요.
+
+**handler.js**에서 "algoBot의 추천 문제는?" 버튼은 사용자가 세가지의 옵션을 모두 선택했는지 확인하고, 만약 세가지를 모두 선택했다면 **service.js**의 필터링 함수를 호출해요.
+이후 선택지에 맞는 필터링 연산을 수행하고 결과를 사용자에게 보여주는 방식으로 기능이 동작해요.
+
+<hr/>
+
+## 결론
+
+복잡한 기능은 아니였지만 함께 공부하는 데브코스분들을 위해 개발하고 서비스하는 과정이 너무나 즐거웠어요.
+
+평소 개발자가 갖춰야 하는 핵심역량이 문제를 인식하고 이를 해결하기 위해 기술에 구애받지 않고 추진할 수 있는 역량이라고 생각했는데, 이와 부합한 프로젝트였기에 더욱 가치있는 프로젝트라고 생각해요.
+
+제가 개발한 코드는 <a href="https://github.com/scorchedrice/slack-bot">여기</a>에서 확인하실 수 있으니 참고해보시면 좋을 것 같아요!
