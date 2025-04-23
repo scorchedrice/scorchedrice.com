@@ -33,7 +33,7 @@ export default function CategoryButton({categoryName} : {categoryName: CategoryT
   return (
     <Button
       className={clsx(
-        "bg-transparent text-black border-none shadow-none h-auto text-base font-normal hover:bg-gray-100 transition",
+        "bg-transparent border-none shadow-none h-auto text-base font-normal transition text-black dark:text-gray-300 hover:bg-transparent",
         isActive === categoryName && "underline underline-offset-4"
       )}
     >

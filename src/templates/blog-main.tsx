@@ -8,6 +8,7 @@ import CategoryButton from "@/widgets/home/CategoryButton";
 import RightSide from "@/widgets/home/RightSide";
 import Profile from "@/widgets/home/Profile";
 import Pagination from "@/widgets/home/Pagination";
+import TagButton from "@/widgets/home/TagButton";
 
 type BlogPageContext = {
   category: string;
@@ -70,9 +71,7 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
                     <div className="flex my-2">
                       {tags.map((tag : string) => {
                         return (
-                          <div className="bg-gray-300 rounded-2xl p-1 text-[12px] mr-1">
-                            {tag}
-                          </div>
+                          <TagButton key={tag} tagName={tag}/>
                         )
                       })}
                     </div>
@@ -143,4 +142,4 @@ export const query = graphql`
 
 export default BlogPageTemplate
 
-export const Head: HeadFC = () => <title>Home Page</title>
+export const Head: HeadFC = () => <title>scorchedrice</title>
