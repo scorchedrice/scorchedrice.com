@@ -7,7 +7,7 @@ import {ReactNode} from "react";
 export default function Layout({ children } : { children : ReactNode }) {
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-background opacity-95 flex justify-between items-center w-[100dvw] max-w-[1200px] mx-auto p-4 h-[50px] pt-4">
+      <nav className="sticky top-0 z-50 bg-background opacity-95 flex justify-between items-center w-[100dvw] mx-auto p-4 h-[50px] pt-4">
         <Link to="/" className="flex items-center font-bold text-[24px]">
           <span>scorchedrice.com</span>
         </Link>
