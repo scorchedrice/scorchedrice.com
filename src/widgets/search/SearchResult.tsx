@@ -5,7 +5,10 @@ export function SearchResultEmpty() {
   return (
     <div className="flex flex-col items-center m-10">
       <div className="flex">
-        <StaticImage src="../../shared/assets/glass-person.png" alt="can't find post"/>
+        <StaticImage src="../../shared/assets/glass-person.png"
+                     alt="can't find post"
+                     placeholder="none"
+        />
         <div className="font-bold text-[34px] animate-pulse">?</div>
       </div>
       <span className="mt-2">검색 결과를 찾지 못했어요.</span>

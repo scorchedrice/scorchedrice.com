@@ -29,6 +29,7 @@ export const createPages : GatsbyNode["createPages"] = async ({ graphql, actions
           category
           slug
           title
+          tags
           date(formatString: "YYYY-MM-DD")
           hero_image_alt
           hero_image {

@@ -2,8 +2,9 @@ import * as React from 'react';
 import {Link} from "gatsby";
 import ThemeToggle from "@/widgets/theme/ThemeToggle";
 import {Search} from "lucide-react";
+import {ReactNode} from "react";
 
-export default function Layout({ children } : { children : React.ReactNode }) {
+export default function Layout({ children } : { children : ReactNode }) {
   return (
     <>
       <nav className="flex justify-between items-center w-[100dvw] max-w-[1200px] mx-auto p-4 h-[50px] mt-4">
@@ -11,7 +12,9 @@ export default function Layout({ children } : { children : React.ReactNode }) {
           <span>scorchedrice.com</span>
         </Link>
         <div className="flex items-center">
-          <Link to="/search">
+          <Link
+            to="/search"
+          >
             <Search className="m-4"/>
           </Link>
           <ThemeToggle/>

@@ -4,6 +4,7 @@ export type SearchResultType = {
   id: string;
   frontmatter: {
     category: string;
+    tags: string[];
     slug: string;
     title: string;
     date: string;

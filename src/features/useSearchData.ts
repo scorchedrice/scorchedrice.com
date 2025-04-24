@@ -18,11 +18,12 @@ export default function useSearchData(value: string) {
   useEffect(() => {
     const filtered = allPosts.filter((post) => {
       return (
-        post.frontmatter.title.toLowerCase().includes(value.toLowerCase())
+        post.frontmatter.title.toLowerCase().includes(value.toLowerCase()) ||
+        post.frontmatter.tags.some(tag => tag.toLowerCase().includes(value.toLowerCase()))
       );
     })
     setResults(filtered);
-  }, [value]);
+  }, [value, allPosts]);
 
   return {
     results

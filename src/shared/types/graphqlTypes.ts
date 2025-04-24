@@ -42,8 +42,16 @@ export type AllPostsQueryResult = {
     nodes: {
       id: string;
       frontmatter: {
+        title: string;
+        date: string;
         category: string;
-        slug: string;
+        tags: string[];
+        hero_image_alt: string;
+        hero_image: {
+          childImageSharp: {
+            gatsbyImageData: IGatsbyImageData;
+          };
+        };
       };
     }[];
   };

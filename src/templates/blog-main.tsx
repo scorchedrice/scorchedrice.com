@@ -1,15 +1,14 @@
 import * as React from "react"
 import "../global.css";
 import {graphql, HeadFC, Link, PageProps} from "gatsby"
-import Layout from "../widgets/layout/layout";
 import {GatsbyImage, getImage} from "gatsby-plugin-image";
 import {Separator} from "@/components/ui/separator";
 import CategoryButton from "@/widgets/home/CategoryButton";
 import RightSide from "@/widgets/home/RightSide";
-import Profile from "@/widgets/home/Profile";
 import Pagination from "@/widgets/home/Pagination";
 import TagButton from "@/widgets/home/TagButton";
 import {BlogMainType} from "@/shared/types/graphqlTypes";
+import MainLayout from "@/widgets/layout/mainLayout";
 
 type BlogPageContext = {
   category: string;
@@ -34,10 +33,7 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
     }
   }
   return (
-    <Layout>
-      <div className="w-full max-w-[1200px] mx-auto h-[200px] flex items-center p-4">
-        <Profile/>
-      </div>
+    <MainLayout>
       <main className="w-full flex max-w-[1200px] min-h-[100dvh] mx-auto">
         <section id="post_list" className="w-full md:w-2/3 p-4">
           <div className="w-full flex" id="categories">
@@ -95,7 +91,7 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
         totalPages={pageContext.totalPages}
         category={pageContext.category}
       />
-    </Layout>
+    </MainLayout>
   )
 }
 

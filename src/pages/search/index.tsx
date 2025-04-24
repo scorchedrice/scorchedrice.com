@@ -1,14 +1,29 @@
 import * as React from 'react';
 import SearchLayout from "@/widgets/layout/searchLayout";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import useSearchData from "@/features/useSearchData";
 import {GatsbyImage, getImage} from "gatsby-plugin-image";
 import {Link} from "gatsby";
 import {NoInput, SearchResultEmpty} from "@/widgets/search/SearchResult";
+import {useLocation} from "@reach/router";
+
+type LocationState = {
+  defaultValue? : string;
+}
 
 const SearchIndexPage = () => {
+  const location = useLocation() as { state?: LocationState };
+  const defaultValue = location.state?.defaultValue || "";
+
   const [value, setValue] = useState("");
   const { results } = useSearchData(value);
+
+  useEffect(() => {
+    if (defaultValue) {
+      setValue(defaultValue);
+    }
+  }, [defaultValue]);
+
   return (
     <SearchLayout value={value} setValue={setValue}>
       {
