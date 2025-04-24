@@ -1,6 +1,7 @@
 import {StaticImage} from "gatsby-plugin-image";
 import * as React from "react";
 import {Link} from "gatsby";
+import {ArrowUpRight} from "lucide-react";
 
 export default function Profile() {
   return (
@@ -20,10 +21,16 @@ export default function Profile() {
           </span>
         </Link>
         <span>의미 있는 성장을 위해 나의 흔적을 기록하는 공간입니다.</span>
-        {/*<div className="text-[12px] mt-4">*/}
-        {/*  <Link to="/" className="mr-4">이력서</Link>*/}
-        {/*  <Link to="/">포트폴리오</Link>*/}
-        {/*</div>*/}
+        <div className="text-[12px] mt-4 flex">
+          <Link to="/" className="flex mr-4">
+            <span>이력서</span>
+            <ArrowUpRight className="size-[10px]"/>
+          </Link>
+          <Link to="/profile/portfolio" className="flex">
+            <span>포트폴리오</span>
+            <ArrowUpRight className="size-[10px]"/>
+          </Link>
+        </div>
       </div>
     </>
   )

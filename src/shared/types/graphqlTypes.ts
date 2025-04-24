@@ -56,3 +56,44 @@ export type AllPostsQueryResult = {
     }[];
   };
 };
+
+// project query
+export type ProjectSectionQueryType = {
+  allMdx: {
+    nodes: {
+      id: string;
+      frontmatter: {
+        title: string;
+        slug: string;
+        tags: string[];
+        hero_image_alt: string;
+        hero_image: {
+          childImageSharp: {
+            gatsbyImageData: IGatsbyImageData;
+          };
+        };
+        git_link: string;
+        sub_title: string;
+        summary: string[];
+      };
+    }[];
+  };
+}
+
+export type ProjectsType = {
+  id: string;
+  frontmatter: {
+    title: string;
+    slug: string;
+    tags: string[];
+    hero_image_alt: string;
+    hero_image: {
+      childImageSharp: {
+        gatsbyImageData: IGatsbyImageData;
+      };
+    };
+    git_link: string;
+    sub_title: string;
+    summary: string[];
+  };
+}

@@ -12,6 +12,7 @@ type LocationState = {
 }
 
 const SearchIndexPage = () => {
+  // TODO : 처음에 창이 나올 때, 시간차를 둬서 깜빡이는 현상을 방지하자. setTimeout!
   const location = useLocation() as { state?: LocationState };
   const defaultValue = location.state?.defaultValue || "";
 
