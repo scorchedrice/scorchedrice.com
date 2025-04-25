@@ -1,5 +1,5 @@
 import * as React from 'react';
-import "../global.css";
+import "../../global.css";
 import Layout from "../../widgets/layout/layout";
 import SEOTitle from "../../widgets/seo/MetaTitle";
 import {graphql} from "gatsby";
