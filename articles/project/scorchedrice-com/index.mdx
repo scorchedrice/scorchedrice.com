@@ -1,0 +1,182 @@
+---
+title: "개인 페이지 - scorchedrice.com"
+date: "2025-04-25"
+category: "프로젝트"
+tags: ["Gatsby"]
+slug: "scorchedrice-com"
+hero_image: "./scorchedrice-com.png"
+hero_image_alt: "scorchedrice-com"
+git_link: "https://github.com/scorchedrice/scorchedrice.com"
+sub_title: "기존 Jekyll 기반 블로그의 유지보수 어려움 해결, 블로그와 포트폴리오 페이지의 통합을 목적으로 개발"
+summary: ["Graphql을 활용한 데이터관리", "mdx 플러그인을 활용한 블로그 게시물 구현", "카테고리 / 태그별 / 제목 검색기능", "다크모드 / 라이트모드 구현"]
+---
+
+import graphql from "./graphql.png"
+
+블로그와 포트폴리오 페이지를 통합한 개인 페이지 'scorchedrice'를 개발한 과정을 소개하려고해요. 왜 이 프로젝트를 시작했는지, 어떤 방식으로 구현했는지 소개할게요.
+
+<hr/>
+
+## 목차
+
+<ul>
+  <li>프로젝트를 진행하게 된 이유</li>
+  <li>구현과정</li>
+  <li>트러블슈팅</li>
+  <li>성과 & 결론</li>
+</ul>
+
+<hr/>
+
+## 1. 프로젝트를 진행하게 된 이유
+
+프로젝트를 진행한 이유는 크게 다음 세가지 이유 때문이에요.
+
+- 기존 블로그 커스텀의 어려움 (Jekyll, Ruby 환경)
+- 포트폴리오와 블로그를 통합하기 위해
+- 개인적인 Gatsby 활용 경험에 대한 아쉬움
+
+위 이유를 하나하나 설명드려볼게요.
+
+<br/>
+
+### 첫번째, 기존 블로그 커스텀의 어려움 (Jekyll, Ruby 환경)
+
+기존에 운영하던 블로그는 Jekyll 기반의 블로그였어요. 테마를 선택하고 Git Pages를 활용한다면 정말 간단하게 나만의 블로그를 만들 수 있었고 SSG이다보니 SEO에도 유리했기에 이를 활용해서 블로그를 운영했어요.
+
+위와 같은 장점에도 불구하고 Ruby 기반으로 동작하는 Jekyll 이였기에 커스텀 부분에서 많은 제약이 있었어요.
+
+따라서, 동일하게 SSG이면서 React기반 프레임워크인 Gatsby로 마이그레이션하기로 결정했어요. 익숙한 React 기반의 프레임워크였기 때문에 이와같은 문제를 해결할 수 있었기 때문이에요.
+
+<br/>
+
+### 두번째, 포트폴리오와 블로그를 통합하기 위해
+
+포트폴리오 페이지 배포를 목적으로 도메인을 구매하고 운영하면서 문득 이런 생각이 들었어요.
+
+***블로그는 github page로, 포트폴리오는 다른 도메인으로 굳이 분리해서 관리해야할까?***
+
+그래서 이를 하나의 프로젝트에서 관리하기위해 이 프로젝트를 시작했어요.
+
+<br/>
+
+### 세번째, 개인적인 아쉬움
+
+포트폴리오를 처음 개발할 때 Gatsby를 활용하여 개발했어요.
+하지만 페이지 하나로 구성된 프로젝트였기에 데이터를 다루는 복잡한 로직이 없었기에 Graphql을 활용한 데이터관리 기능을 사용하지 않았어요.
+
+이에 개인적으로 아쉬움을 가지고있었고, 이 프로젝트를 통해 Gatsby라는 프레임워크에 한걸음 가까워지기 위해 프로젝트 진행을 결정했어요.
+
+<hr/>
+
+## 2. 구현과정
+
+이 프로젝트의 핵심기능은 다음과 같아요.
+
+- Graphql 활용 데이터관리
+- 블로그 글 포스팅
+- 다크모드 & 라이트모드
+
+어떻게 구현했는지, 이슈는 어떻게 해결했는지 핵심기능 단위로 설명드릴게요.
+
+<br/>
+
+### 첫번째, Graphql 활용 데이터관리
+
+<img src={graphql} alt="graphql.png" className="mx-auto"/>
+
+Graphql은 요청자가 필드를 선택해서 요청을 보내고 이에 해당하는 응답을 받을 수 있어요.
+즉, 응답 측에서 지정한 데이터만 받을 수 있는 일반적인 HTTP 통신과 달리 GraphQL은 받을 응답 필드를 선택할 수 있기에 낭비없는 데이터 요청 및 관리가 가능해요.
+
+이 기능을 적극 활용해서 프로젝트를 구성했어요.
+`gatsby-plugin-filesystem`, `gatsby-plugin-mdx`를 활용해서 mdx 파일을 인식할 수 있도록 설정 했고,
+이를 GraphQL로 관리했어요.
+
+<br/>
+
+### 두번째, 블로그 글 포스팅
+
+Gatsby의
+[File System Route]("https://www.gatsbyjs.com/docs/reference/routing/file-system-route-api/")
+기능을 활용하여 블로그 포스팅 기능을 구현했어요.
+
+FSR은 `src/pages/article/{mdx.frontmatter__slug}.tsx`로 파일명을 구성하면 Gatsby가 이 파일명을 보고. **article/frontmatter.slug**에 해당하는 페이지를 자동으로 생성해요.
+
+생성된 페이지에 접근하면 `gatsby-plugin-mdx`가 이에 해당하는 mdx 파일을 Graphql 노드로 파싱하고 컴포넌트로 변환해요.
+children으로 본문 내용을 가져올 수 있고 해당 노드 id에 맞는 쿼리 정보를 가져올 수 있어요.
+
+활용 예시는 [이 링크](https://github.com/scorchedrice/scorchedrice.com/blob/master/src/pages/article/%7Bmdx.frontmatter__slug%7D.tsx)에서 확인해주세요.
+
+<br/>
+
+### 세번째, 다크모드 & 라이트모드
+
+localStorage를 활용했어요. localStorage - theme가 없다면 현재 모드를 저장하고, 있다면 이에 해당하는 화면을 보여주도록 기능을 구현했어요.
+
+실질적인 UI 적용은 최상단 html 태그 클래스명으로 **dark**를 떼고 붙히며 동작하도록 기능을 구현했어요.
+
+<details>
+  <summary>ThemeToggler 예시</summary>
+  ```tsx
+  import React from "react";
+  import {useEffect, useState} from "react";
+  import {Moon, Sun} from "lucide-react";
+
+  export default function ThemeToggle() {
+    const [isDark, setIsDark] = useState(true);
+    useEffect(() => {
+      const theme = localStorage.getItem('theme');
+      if (theme === "dark") {
+        setIsDark(true);
+        document.documentElement.classList.add("dark");
+      } else {
+        setIsDark(false);
+        document.documentElement.classList.remove("dark");
+      }
+    }, []);
+
+    function toggleTheme() {
+      const next = !isDark;
+      setIsDark(next);
+      localStorage.setItem("theme", next ? "dark" : "light");
+      document.documentElement.classList.toggle("dark", next);
+    }
+
+    return (
+     // UI..
+    )
+  }
+  ```
+</details>
+
+## 3. 트러블슈팅
+
+이 프로젝트를 진행하며 가장 문제는 **페이지네이션**이였어요.
+만약 게시글이 많아진다면, 이를 어떻게 분리해야할까 고민이 많았어요.
+
+고민한 결과 크게 두가지 방법으로 문제를 해결할 수 있을 것이라 판단했어요.
+
+- Client 측에서 필터링하여 보여준다.
+- 페이지네이션을 미리 해서 이에 해당하는 페이지를 여러개 만든다.
+
+첫번째 방법은 구현하는 과정이 매우 쉬웠어요.
+단순히, 몇번째 게시물 5개 가져오고, 그 다음에는 그 게시물부터 5개 가져와 .. 이런식으로 구현하면 되는 것이였으니까요.
+
+하지만 이 방법은 옳지 않다고 생각했어요. 클라이언트 측에서 관리하면 예상치 못한 오류 발생 가능성이 오히려 높아질 것이라 생각했고, 모든 정보를 한번에 받아와야하기에 불필요한 리소스 낭비가 발생할 수 있을 것이라 생각했어요.
+
+그렇기에 두번째 방법으로 문제를 해결했어요.
+
+`gatsby-node.ts`에서 **createPage API**를 활용하여 각 카테고리와 페이지 번호에 맞는 정적 페이지를 미리 생성하도록 했어요.
+이를 위해 전체 mdx파일, 각 카테고리별 mdx 파일 수를 구하고 이에 맞는 정적 페이지들을 빌드할 때 생성하도록 기능을 구현했어요.
+
+[구현코드](https://github.com/scorchedrice/scorchedrice.com/blob/master/gatsby-node.ts)
+
+<hr/>
+
+## 4. 성과 & 결론
+
+Gatsby 활용 역량을 키울 수 있었던 좋은 기회였다고 생각해요.
+특히, 기존에 다뤄보지 않았던 GraphQL을 다뤄보며 새로운 기술에 대한 감각을 키웠다는 것이 가장 큰 성과라고 생각해요.
+
+또한 다크모드와 라이트모드를 브라우저의 localStorage를 통해 구현하며,
+개인화된 사용자 경험을 어떻게 구성할지 고민하고 적용하는 과정도 의미 있는 경험이었어요.

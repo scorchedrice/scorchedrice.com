@@ -31,17 +31,11 @@ export const query = graphql`
         id
         frontmatter {
           title
-          slug
-          tags
-          hero_image {
-            childImageSharp {
-              gatsbyImageData
-            }
-          }
-          hero_image_alt
-          git_link
           sub_title
+          tags
           summary
+          slug
+          git_link
         }
       }
     }

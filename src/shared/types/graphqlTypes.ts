@@ -66,12 +66,6 @@ export type ProjectSectionQueryType = {
         title: string;
         slug: string;
         tags: string[];
-        hero_image_alt: string;
-        hero_image: {
-          childImageSharp: {
-            gatsbyImageData: IGatsbyImageData;
-          };
-        };
         git_link: string;
         sub_title: string;
         summary: string[];
@@ -86,12 +80,6 @@ export type ProjectsType = {
     title: string;
     slug: string;
     tags: string[];
-    hero_image_alt: string;
-    hero_image: {
-      childImageSharp: {
-        gatsbyImageData: IGatsbyImageData;
-      };
-    };
     git_link: string;
     sub_title: string;
     summary: string[];
