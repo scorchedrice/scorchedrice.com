@@ -1,4 +1,5 @@
 import React from "react"
+import "../global.css";
 import Layout from "@/widgets/layout/layout";
 import IntroSection from "@/widgets/portfolio/IntroSection";
 import AboutSection from "@/widgets/portfolio/AboutSection";

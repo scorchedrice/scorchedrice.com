@@ -1,4 +1,5 @@
 import React from "react"
+import "../global.css";
 import Layout from "@/widgets/layout/layout";
 import IntroResume from "@/widgets/resume/IntroResume";
 import SkillsResume from "@/widgets/resume/SkillsResume";

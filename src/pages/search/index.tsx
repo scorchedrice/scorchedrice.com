@@ -1,4 +1,5 @@
 import * as React from 'react';
+import "../global.css";
 import SearchLayout from "@/widgets/layout/searchLayout";
 import {useEffect, useState} from "react";
 import useSearchData from "@/features/useSearchData";
