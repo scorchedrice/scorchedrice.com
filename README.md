@@ -1,4 +1,4 @@
-# EEUM BLOG
+# scorchedrice.com
 
 ## 개발일지
 

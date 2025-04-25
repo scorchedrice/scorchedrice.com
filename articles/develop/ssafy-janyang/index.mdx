@@ -1,0 +1,156 @@
+---
+title: "미션 참여형 알람앱 - 자냥"
+date: "2024-07-31"
+category: "프로젝트"
+tags: ["SSAFY", "Flutter", "Lottie"]
+slug: "ssafy-janyang"
+hero_image: "./janyang.png"
+hero_image_alt: "janyang.png"
+git_link: ""
+sub_title: "Flutter & OpenVidu 활용 화상회의 형식의 미션참여형 알람앱"
+summary: ["FE 2, BE 4으로 진행된 팀 프로젝트", "Lottie를 활용한 Animated Logo 제작", "튜토리얼 기능 구현", "미션 참여 결과 제공 기능 구현", "다크모드 / 라이트모드 구현"]
+---
+
+import DarkLightMode from "./light_dark.gif"
+import Tutorial from "./tutorial.gif"
+import SetNickName from "./set_nickname.gif"
+import MissionReport from "./mission_report.gif"
+import Solo from "./janyang_solo_mission.png"
+import EnterMission from "./janyang_enter_mission.png"
+import Mission from "./janyang_mission.png"
+import AfterMission from "./janyang_change_mission.png"
+
+미션 참여 기능을 제공하는 알람앱, '자냥'의 개발 과정을 소개하려고해요. 왜 이 프로젝트를 시작했고, 어떤 기능을 개발했는지 소개할게요.
+
+<hr/>
+
+## 목차
+
+<ul>
+  <li>프로젝트를 진행하게 된 이유</li>
+  <li>담당한 기능</li>
+  <li>트러블슈팅</li>
+  <li>성과 & 결론</li>
+  <li>프로젝트 시연 이미지</li>
+</ul>
+
+<hr/>
+
+## 1. 프로젝트를 진행하게 된 이유
+
+일어나기 힘든 아침시간, 즐겁게 일어나는 방법 있으면 참 좋겠다는 단순한 생각에서 시작한 프로젝트에요.
+
+만약, 기상시간에 친한 친구 4명이 모두 양치하는 것을 인증해야한다면? 또, 그 장면을 서로 보고 있다면?
+비록 별거아닌 게임이지만, 하루 아침을 즐겁게 시작할 수 있지 않을까요?
+
+<hr/>
+
+## 2. 담당한 기능
+
+이 프로젝트에서 제가 구현한 기능 중 핵심기능을 중심적으로 소개할게요.
+
+- 1. 다크/라이트모드, Animated Logo
+- 2. 튜토리얼
+- 3. 로그인 이후 회원 등록 과정
+- 4. 미션 수행 결과
+
+### 첫번째, 다크/라이트모드, Animated Logo
+
+<img src={DarkLightMode} alt="dark-light.gif" className="mx-auto" />
+
+다크모드와 라이트모드에 따라 로고가 변화하도록 했어요.
+실제 고양이 동공 크기가 낮과 밤에 변화하는 것을 참고하여 다크모드에서는 큰 동공, 라이트모드에선 작은 동공으로 변화하도록 기능을 구현했어요.
+
+Lottie를 활용하여 주기적으로 동공이 움직일 수 있도록 하였고, 무작위 난수 연산을 통해 매번 동일한 움직임이 아닐 수 있도록 기능을 개발했어요.
+
+<hr/>
+
+### 두번째, 하이라이트기능
+
+<img src={Tutorial} alt="tutorial.gif" className="mx-auto"/>
+
+[Tutorial Coach Mark](https://pub.dev/packages/tutorial_coach_mark)라는 이름의 라이브러리를 커스텀하여 튜토리얼을 구현했어요.
+
+튜토리얼에서 강조할 좌표와 사이즈를 미리 지정하고 정해진 순서에 맞게 표시할 수 있도록 개발했어요.
+
+### 세번째, 로그인 이후 회원 등록 과정
+
+<img src={SetNickName} alt="set_nickname.gif" className="mx-auto"/>
+
+회원가입 이후 닉네임 설정 로직을 구현했어요.
+
+DB에 저장될 회원 레코드의 제약조건을 사전에 검증하여 데이터 무결성을 프론트엔드에서도 준수할 수 있도록 했어요.
+
+또, 닉네임 변경 도중에 애플리케이션을 종료하는 경우 등을 고려하여
+랜덤한 닉네임으로 가입한 이후, 닉네임을 변경하는 형식의 로직으로 구현했어요.
+
+### 네번째, 코드 생성
+
+<img src={MissionReport} alt="mission-report.gif" className="mx-auto"/>
+
+최근 7일 / 30일에 해당하는 미션 수행 결과를 제공하고, 캘린더를 통해 언제 어떤 미션을 수행했는지 확인할 수 있는 기능을 개발했습니다.
+
+Bubble 그래프의 경우 [FL Chart](https://pub.dev/packages/fl_chart)라이브러리를 커스텀하여 개발했고, 캘린더는 [TableCalendar](https://pub.dev/packages/table_calendar)라이브러리를 커스텀하여 개발했습니다.
+
+보여줄 화면을 토글하는 기능은 [ToggleSwitch](https://pub.dev/packages/toggle_switch)와 애니메이션을 활용한 커스텀 바를 개발하여 활용하였고, 보여줄 컴포넌트를 결정하는 전역변수를 GetX로 관리하였습니다.
+
+
+## 트러블슈팅
+
+개발 초기에는 React Native를 사용해 앱 개발을 진행했어요.
+그러나 알람앱 특성상 FCM 디바이스 토큰을 수시로 확인하며 푸시 알람 테스트를 해야 했는데,
+Expo 환경의 React Native에서는 .apk 빌드 이전에 이를 확인할 수 없는 문제가 발생했어요.
+
+이는 개발 생산성과 유지보수성을 크게 저해할 수 있는 이슈였고,
+장기적인 관점에서 개발자 경험을 고려했을 때 반드시 해결이 필요했어요.
+
+이에 대해 고민한 끝에
+해당 이슈로부터 자유로운 Flutter로 프레임워크 전환을 제안했어요.
+개발 초기이기에 충분히 가능한 선택지라고 생각했어요.
+
+비록 Dart라는 새로운 언어를 학습해야 했지만
+Dart가 타입스크립트와 유사한 구조를 갖고 있어 학습 장벽이 높지 않다는 점,
+실제로 많은 기업들이 Flutter를 도입하여 앱 개발을 진행하고 있다는 점을 근거로
+팀 내 설득을 진행했고 최종적으로 Flutter로 전환하여 개발을 진행했어요.
+
+특히 JavaScript로 잘 구현되어 있던 OpenVidu와 같은 기능은
+Flutter에서 React WebView 형태로 구현하면서 개발을 진행했어요.
+
+## 성과 & 결론
+
+- Flutter라는 크로스플랫폼 프레임워크를 활용한 모바일 앱 경험을 쌓았어요.
+- UI/UX 개선을 중심으로 사용자 경험을 높이는 역량을 키웠어요.
+- 1인 미션 판별에 AI를 적용해 프로젝트 완성도를 높일 수 있었어요.
+- 새로운 기술을 도입하는 과정에서도 기존 기술을 유연하게 병행 활용하는 방법을 경험했어요.
+
+## 프로젝트 시연 이미지
+
+<details>
+  <summary>AI 감독 (1인모드)</summary>
+  <img src={Solo} alt="solo-mission.png"/>
+  서비스의 미션 성공여부는 함께 미션을 수행한 인원들의 투표로 결정되는 방식이에요. 하지만 이와 같은 경우 혼자서 미션방을 만들거나, 혼자만 미션에 참여하면 무조건 실패한다는 치명적 오류가 발생해요.
+
+  이와 같은 경우 ChatGPT를 활용하여 미션 성공여부를 판별할 수 있도록 했어요.
+</details>
+
+<details>
+  <summary>미션 진입</summary>
+  <img src={EnterMission} alt="enter_mission.png"/>
+  미션 시간이 5분 전부터 미션방에 입장 가능해요. 입장한 이후엔 참여 인원들이 지정한 미션 중 하나를 선택해서 입장해야해요.
+</details>
+
+<details>
+  <summary>미션 수행</summary>
+  <img src={Mission} alt="mission.png"/>
+  미션을 수행하고 팀원들끼리 투표를 통해 성공여부를 판별해요.
+  얼굴을 노출하는것이 부담스러우면 필터링 기능을 활용할 수 있어요.
+
+  이 부분은 React의 웹뷰를 활용하여 개발했어요.
+</details>
+
+<details>
+  <summary>미션 수행 이후</summary>
+  <img src={AfterMission} alt="after_mission.png"/>
+  미션을 완료하고 퇴장하게되면 기존에 내가 추가한 미션을 수정할 수 있어요.
+</details>
+
