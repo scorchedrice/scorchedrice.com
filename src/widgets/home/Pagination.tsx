@@ -28,7 +28,7 @@ export default function Pagination({ currentPage, totalPages, category }: Pagina
             key={page}
             to={link}
             className={`px-3 py-1 rounded text-sm font-medium border 
-              ${isActive ? "bg-black text-white" : "bg-white hover:bg-gray-100 text-gray-800 border-gray-300"}`}
+              ${isActive ? "bg-primary text-primary-foreground" : "bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground"}`}
           >
             {page}
           </Link>

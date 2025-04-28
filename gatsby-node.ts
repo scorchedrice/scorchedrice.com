@@ -46,7 +46,7 @@ export const createPages : GatsbyNode["createPages"] = async ({ graphql, actions
 
   if (!results.data) throw new Error("GraphQL error!");
   const posts = results.data.allMdx.nodes;
-  const postsPerPage = 10;
+  const postsPerPage = 5;
   const categoryMap: Record<string, typeof posts> = {};
   const targetCategories = ["전체", "개발", "프로젝트"];
   const categoryUrl = {

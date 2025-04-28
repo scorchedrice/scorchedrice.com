@@ -1,0 +1,94 @@
+---
+title: "학습 보조 데스크탑앱 - 미루니"
+date: "2024-11-30"
+category: "프로젝트"
+tags: ["SSAFY", "Electron"]
+slug: "ssafy-miruni"
+hero_image: "./miruni_icon.png"
+hero_image_alt: "baro.png"
+git_link: ""
+sub_title: "Electron & OCR & 웹캠 활용한 학습 보조 데스크탑앱"
+summary: ["FE 1, BE 3, AI 1으로 진행된 팀 프로젝트, FE담당", "ipcRender, ipcMain을 활용한 IPC 기능 구현", "Render Process에 React, MSW 설치하여 개발 진행", "IPC 활용한 Main Process에서의 데이터 통신 기능 구현", "tessaract.js를 활용한 OCR 기능 구현", "UI/UX 구현 전 과정 담당"]
+---
+
+import MiruniStudyStart from "./miruniStudy_start.png";
+import MiruniStudying from "./miruniStudy.png";
+import MiruniOCR from "./miruniOCR.png";
+import MiruniMain from "./miruniMain.png";
+
+집중환경 조성에 도움을 주는 데스크탑앱 '미루니'의 개발과정을 소개합니다. 본 프로젝트에선 AI를 적극 활용했는데요. 어떤 방식으로 AI를 활용했고, 개발했는지 소개하려합니다.
+
+<hr/>
+
+## 목차
+
+<ul>
+  <li>프로젝트를 진행하게 된 이유</li>
+  <li>담당한 기능</li>
+  <li>트러블슈팅 & 성과</li>
+</ul>
+
+## 프로젝트를 진행하게 된 이유
+
+숏폼 컨텐츠의 발달 등 집중하기 어려운 환경에 놓여있습니다. 특히 컴퓨터로 작업하는 개발자와 같은 경우 이와같은 유혹이 더욱 심할 수 있다고 생각했어요.
+
+이런 환경 속 ***집중환경을 조성하고 관리해주는 서비스가 있다면 좋지 않을까?*** 라는 생각에서 시작한 프로젝트에요.
+
+## 담당한 기능
+
+이번 프로젝트에선 프론트엔드 전 부분을 단독으로 진행했어요. 구현한 내용 중 핵심 기능을 중심적으로 설명할게요.
+
+- 1. 그룹 스터디
+- 2. OCR을 활용한 학습내용 정리
+- 3. 집중도 그래프 / 잔디
+- 4. IPC
+
+### 첫번째, 그룹스터디
+
+<details>
+  <summary>그룹 스터디방 관련 이미지</summary>
+  <img src={MiruniStudyStart} alt="miruniStudy_start.png"/>
+  <img src={MiruniStudying} alt="miruniStudy.png"/>
+</details>
+
+해당 그룹 스터디 방에 속한 인원들이 **start, stop, pause, studying** 상태를 WebSocket으로 공유할 수 있도록 stomp.js를 활용하여 기능을 구현했어요.
+
+또한 WebCam을 연결하고 주기적으로 이를 AI 서버로 전송하여 집중도를 판별할 수 있도록 했어요.
+**react-webcam**라이브러리를 커스텀하여 웹캠 화면을 주기적으로 캡처하고 전송하는 기능을 구현했어요.
+웹캠이 없는 사용자 같은 경우엔, 웹캠이 없어 집중도 판별에 제한이 있을 수 있는 경고문구를 띄워 사용자가 해당 기능을 미리 인지할 수 있도록 했어요.
+
+### 두번째, OCR을 활용한 학습내용 정리
+
+<img src={MiruniOCR} alt="miruniOCR.png" className="mx-auto"/>
+
+tessaract.js를 활용하여 사용자의 화면을 주기적으로 캡처하고, OCR 분석을 통해 현재 화면을 요약할 수 있는 기능을 개발했어요.
+단, OCR 기능 자체가 리소스 소모가 크기에 이미지 여러장을 클라이언트에 저장하고 있다가, 10분 단위로 Spring 서버로 전송하여 ChatGPT 활용하여 정리하는 방식으로 기능을 구현했어요.
+
+### 세번째, 집중도 그래프 / 잔디
+
+<img src={MiruniMain} alt="miruni_main.png" className="mx-auto"/>
+
+해당 날짜의 스터디 시간에 따라 다른 색상으로 학습 정도를 파악할 수 있도록 잔디 기능을 구현했어요.
+또, 최근 일주간 어떤 과목을 중심적으로 공부했는지, 몇시간 집중했는지 그래프와 수치 데이터를 활용하여 나타낼 수 있도록 기능을 구현했어요.
+
+### 네번째, IPC
+
+Electron은 Render Process, Main Process로 동작합니다.
+Render Process에서는 UI 렌더링 기능만 동작하도록 하기 위해 ipcMain, ipcRender 활용하여 Inter Process Communication(IPC)를 구현했어요.
+
+이 과정을 통해 Render Process와 Main Process의 기능을 명확하게 분리했어요.
+
+## 트러블슈팅 & 성과
+
+미루니 사용하는 프레임워크 동작원리를 이해하는 것의 중요성을 알려주고,
+보유한 개발철학을 확립하는데 큰 영향을 끼친 프로젝트이기에 의미있는 프로젝트였다고 생각합니다.
+
+프로젝트 마감 일주일 전, API 통신 연결 과정 중 CORS 오류가 발생했어요.
+이전까지 MSW로 개발을 진행하였기에 파악하기 어려웠던 오류였고 마감 기간이 얼마 남지 않아 빠른 시일내에 이를 해결해야했어요.
+
+처음엔 CORS는 브라우저의 보안 때문에 발생하는 오류인데, 데스크탑 앱 프레임워크인 Electron에서 발생하는 것이 이해하기 어려웠지만
+이를 이해하고자 공식문서를 확인했고 Electron이 크로뮴 기반의 Render 프로세스와 노드 기반의 Main 프로세스로 동작한다는 것을 깨달았어요.
+
+이 과정을 통해서 프레임워크 동작원리를 이해하는 것이 얼마나 중요한지 깨닫게 되었어요.
+Main Process에서 실질적인 데이터 관리가 이뤄진다면 CORS 오류를 해결함은 물론 역할을 명확하게 분리할 수 있다 판단하여 IPC를 구현하여 문제를 해결했어요.
+

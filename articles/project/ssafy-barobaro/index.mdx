@@ -1,0 +1,123 @@
+---
+title: "공연 물품 중개 플랫폼 - 바로바로"
+date: "2024-09-30"
+category: "프로젝트"
+tags: ["SSAFY", "Next.js", "Zustand"]
+slug: "ssafy-barobaro"
+hero_image: "./baro_icon.png"
+hero_image_alt: "baro_icon.png"
+git_link: ""
+sub_title: "Next.js로 개발한 웹앱"
+summary: ["FE 3, BE 3으로 진행된 팀 프로젝트, FE담당", "검색 기능 및 상세페이지 구현", "메인페이지 및 레이아웃 구현", "실시간 채팅 도중 계약 진행 로직", "PIN번호 입력 기능구현 (부인방지)"]
+---
+
+import BaroMain from "./baro_main.png";
+import BaroDetail from "./baro_detail.png";
+import BaroPIN from "./baro_pin.png";
+import BaroContractUser from "./baro_contract_user.png";
+
+import BaroSign from "./baro_sign.png";
+import BaroPost from "./baro_post.png";
+import BaroVerification from "./baro_verification.png";
+
+전자계약서 기반 공연물품 대여 중개 플랫폼 '바로바로'의 개발과정을 소개합니다. 기존 대여가 이뤄지던 플랫폼의 문제점과 어떤 방식으로 이를 해결했는지 소개하려합니다.
+
+<hr/>
+
+## 목차
+
+<ul>
+  <li>프로젝트를 진행하게 된 이유</li>
+  <li>담당한 기능</li>
+  <li>트러블슈팅</li>
+  <li>성과 & 결론</li>
+  <li>프로젝트 시연 이미지</li>
+</ul>
+
+## 프로젝트를 진행하게 된 이유
+
+응원봉 등 공연 물품 대여는 주로 **X.com**, **번개장터**등에서 이루어졌습니다. 하지만, 이는 사기 가능성이 높았습니다. 실제로도 구글에 검색하면 쉽게 사기사례를 확인할 수 있어요.
+
+실제 법적 효력이 있는 전자계약서를 제공하면 이와 같은 사기사례를 줄일 수 있지 않을까라는 생각에서 이 프로젝트를 기획했어요.
+
+## 담당한 기능
+
+제가 구현한 기능 중 핵심 기능을 중심적으로 소개할게요.
+
+- 1. 메인페이지, 검색기능, 상세페이지, 레이아웃
+- 2. PIN번호 입력 (부인방지)
+- 3. 실시간 계약 로직
+
+### 첫번째, 메인페이지/검색/상세페이지/레이아웃 기능
+
+<details>
+  <summary className="font-bold">구현 이미지</summary>
+  <div className="flex justify-center flex-wrap">
+    <img src={BaroMain} alt="baro_main.png" className="m-4"/>
+    <img src={BaroDetail} alt="baro_detail.png" className="m-4"/>
+  </div>
+</details>
+
+기본적인 UI/UX 틀을 구현했어요.
+메인페이지엔 카테고리별로 바로 검색을 진행할 수 있도록 하였고, 상세페이지에선 해당 상품의 이미지를 카로셀로, 직거래 희망 장소를 카카오맵으로 구현했어요.
+
+
+### 두번째, PIN 번호 입력 (부인방지)
+
+<img src={BaroPIN} alt="baro_pin.png" className="mx-auto"/>
+
+전자계약이 동반되는 서비스이기에 부인방지 기능을 구현해야했어요.
+하나은행에서 근무하시는 현직자분의 PIN번호도 충분히 부인방지 효과가 있을 수 있다는 조언을 듣고 이를 구현했어요.
+
+처음 등록할 때, 재 확인 과정에서의 틀린 PIN입력이 발생했을 때 등 다양한 상황에 맞게 동작할 수 있도록 기능을 구현했어요.
+또, 입력할 때 다른 사람이 이를 보고 인식할 수 없도록 랜덤으로 다른 번호가 눌리는 것 처럼 보이는 효과를 구현했어요.
+
+### 세번째, 실시간 거래 로직
+
+<img src={BaroContractUser} alt="baro_contract_user.png" className="mx-auto"/>
+
+가장 핵심이 되는 기능입니다. 실시간 채팅 도중 실시간 계약 작성이 가능한데, 다음의 순서로 계약을 진행해요.
+
+1. 소유자가 계약서를 작성한다.
+2. 소유자가 작성한 이후 대여인이 최종 확인하고 계약서를 작성한다.
+
+소유자가 대여인이 각각 거래서를 확인하고 서명하는 로직을 구현하여 실제 거래하는 과정과 동일하게 전자계약을 맺을 수 있도록 했어요.
+
+pdf 뷰어는 <a href="https://www.npmjs.com/package/@naverpay/react-pdf">@naverpay/react-pdf</a> 라이브러리를 활용하여 개발했고,
+서명을 서버측에 전달하면 서버측에서 서명과 워터마크가 포함된 pdf 문서를 작성할 수 있도록 기능을 구현했어요.
+
+## 트러블슈팅
+
+실제 법적인 효력을 가지는 전자계약서 조건을 성립시키기위해 팀원들과 많은 고민을 했던 프로젝트입니다.
+프로젝트의 목적인 ***법적 효력 보장을 통한 거래 안정성 강화*** 기능을 구현하기 위해선 이 기능이 필수적으로 구현되어야 했어요.
+
+이를 위해 **하나은행**에서 앱 개발을 담당하는 실무자 멘토분의 조언을 통해 PIN 번호 입력으로 부인방지 기능을 구현했어요.
+또한, 실제 효력이 있는 전자계약서 내용 구성을 위해 조사를 진행하며 계약서 내용을 구성하였고,
+계약서에 서명하는 마지막 과정에 워터마크를 삽입하여 **바로바로**에서 작성한 전자계약서임을 보장할 수 있도록 기능을 구현했어요.
+
+## 성과 & 결론
+
+실제로 서비스를 개발할 때 고려해야하는 것이 무엇인지 그 어느때보다 진지하게 고민한 프로젝트였어요.
+법적 효력이 있는 전자계약서 구성을 위해 고민하는 과정을 통해 개발 외적인 부분에서도 학습할 수 있는 좋은 기회였어요.
+
+또한, Next.js를 사용하여 개발하고, Jest를 부분적으로 활용해보며 프론트엔드 역량을 키울 수 있었던 프로젝트였어요.
+
+## 그 외의 프로젝트 이미지
+
+<details>
+  <summary>로그인/회원가입</summary>
+  <img src={BaroSign} alt="baro_sign.png" className="mx-auto"/>
+</details>
+
+<details>
+  <summary>게시물 작성</summary>
+  <img src={BaroPost} alt="baro_post.png" className="mx-auto"/>
+</details>
+
+
+<details>
+  <summary>인증과정</summary>
+  <img src={BaroVerification} alt="baro_verification.png" className="mx-auto"/>
+</details>
+
+

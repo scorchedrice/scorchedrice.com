@@ -18,7 +18,7 @@ const TagSection = ({tagMapData} : {tagMapData : Map<string, string[]>}) => {
             return (
               <div key={key}>
                 <span>{key}</span>
-                <div className="flex flex-nowrap">
+                <div className="flex flex-wrap">
                   {uniqueTags.map((tag) => (
                     <TagButton
                       key={tag}
@@ -34,7 +34,7 @@ const TagSection = ({tagMapData} : {tagMapData : Map<string, string[]>}) => {
         <Separator />
         <div className="p-4 flex flex-col">
           <span>전체</span>
-          <div className="flex">
+          <div className="flex flex-wrap">
             {all.map((tag) => {
               return (
                 <TagButton tagName={tag}/>

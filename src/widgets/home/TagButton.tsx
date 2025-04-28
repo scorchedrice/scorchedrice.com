@@ -5,7 +5,7 @@ import {navigate} from "gatsby";
 const TagButton = ({tagName} : {tagName: string}) => {
  return (
    <Button
-     className="bg-gray-300 rounded-xl p-2 text-[12px] text-gray-700 mr-1 shrink-0"
+     className="bg-gray-300 rounded-xl p-2 m-1 text-[12px] text-gray-700 mr-1 shrink-0"
      onClick={() => navigate("/search", {
       state: { defaultValue: tagName }
      })}
