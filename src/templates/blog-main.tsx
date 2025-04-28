@@ -21,17 +21,6 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
   const postNodes = isAll
     ? data.allMdxUnfiltered.nodes
     : data.allMdxFiltered.nodes;
-  const tagsMap = new Map();
-  for (const node of data.allMdxUnfiltered.nodes) {
-    const category = node.frontmatter.category;
-    const tags = node.frontmatter.tags;
-    if (tagsMap.has(category)) {
-      tagsMap.get(category).push(...tags);
-    } else {
-      tagsMap.set(category, []);
-      tagsMap.get(category).push(...tags);
-    }
-  }
   return (
     <MainLayout>
       <main className="w-full flex max-w-[1200px] min-h-[100dvh] mx-auto">
@@ -84,7 +73,7 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
             )
           })}
         </section>
-        <RightSide tagMapData={tagsMap} />
+        <RightSide />
       </main>
       <Pagination
         currentPage={pageContext.currentPage}
