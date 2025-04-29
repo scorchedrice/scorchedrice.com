@@ -5,7 +5,7 @@ import IntroResume from "@/widgets/resume/IntroResume";
 import SkillsResume from "@/widgets/resume/SkillsResume";
 import ProjectResume from "@/widgets/resume/ProjectResume";
 import {ProjectSectionQueryType} from "@/shared/types/graphqlTypes";
-import {graphql} from "gatsby";
+import {graphql, HeadFC} from "gatsby";
 
 const Resume = ({ data } : { data : ProjectSectionQueryType }) => {
   const projects = data.allMdx.nodes
@@ -40,3 +40,7 @@ export const query = graphql`
 `
 
 export default Resume
+
+export const Head: HeadFC = () => (
+  <title>한지웅의 이력서입니다.</title>
+)

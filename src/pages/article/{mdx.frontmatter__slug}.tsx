@@ -61,6 +61,18 @@ export const query = graphql`
   }
 `
 
-export const Head = ({data} : { data: BlogPostType }) => <SEOTitle title={data.mdx.frontmatter.title}/>
+export const Head = ({data} : { data: BlogPostType }) => (
+  <>
+    <SEOTitle title={data.mdx.frontmatter.title}/>
+    <meta name="description" content={`[${data.mdx.frontmatter.category}] ${data.mdx.frontmatter.tags.join(', ')}`} />
+    <meta name="keywords" content={data.mdx.frontmatter.tags.join(', ')} />
+    <meta property="og:title" content={data.mdx.frontmatter.title} />
+    <meta property="og:description" content={`[${data.mdx.frontmatter.category}] ${data.mdx.frontmatter.tags.join(', ')}`} />
+    <meta property="og:type" content="article" />
+    {data.mdx.frontmatter.tags.map((tag) => (
+      <meta key={tag} property="article:tag" content={tag} />
+    ))}
+  </>
+)
 
 export default BlogPost;

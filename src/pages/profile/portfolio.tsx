@@ -6,7 +6,7 @@ import AboutSection from "@/widgets/portfolio/AboutSection";
 import SkillSection from "@/widgets/portfolio/SkillSection";
 import ArchiveSection from "@/widgets/portfolio/ArchiveSection";
 import ProjectSection from "@/widgets/portfolio/ProjectSection";
-import {graphql} from "gatsby";
+import {graphql, HeadFC} from "gatsby";
 import {ProjectSectionQueryType} from "@/shared/types/graphqlTypes";
 
 const Portfolio = ({ data } : { data : ProjectSectionQueryType }) => {
@@ -44,3 +44,7 @@ export const query = graphql`
 `
 
 export default Portfolio
+
+export const Head: HeadFC = () => (
+  <title>한지웅의 포트폴리오입니다.</title>
+)
