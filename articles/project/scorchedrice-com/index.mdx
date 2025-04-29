@@ -100,7 +100,7 @@ Gatsby의
 [File System Route]("https://www.gatsbyjs.com/docs/reference/routing/file-system-route-api/")
 기능을 활용하여 블로그 포스팅 기능을 구현했어요.
 
-FSR은 `src/pages/article/{mdx.frontmatter__slug}.tsx`로 파일명을 구성하면 Gatsby가 이 파일명을 보고. **article/frontmatter.slug**에 해당하는 페이지를 자동으로 생성해요.
+FSR은 `{mdx.frontmatter__slug}.tsx`로 파일명을 구성하면 Gatsby가 이 파일명을 보고. **article/frontmatter.slug**에 해당하는 페이지를 자동으로 생성해요.
 
 생성된 페이지에 접근하면 `gatsby-plugin-mdx`가 이에 해당하는 mdx 파일을 Graphql 노드로 파싱하고 컴포넌트로 변환해요.
 children으로 본문 내용을 가져올 수 있고 해당 노드 id에 맞는 쿼리 정보를 가져올 수 있어요.

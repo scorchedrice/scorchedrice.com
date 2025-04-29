@@ -46,7 +46,7 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
               <Link
                 to={slug}
                 key={id}
-                className="flex items-center justify-between p-4 my-4 h-[160px] rounded-[10px]
+                className="flex justify-between p-4 my-4 rounded-[10px]
                   transition-all hover:scale-105
                 "
               >
