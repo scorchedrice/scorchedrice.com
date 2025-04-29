@@ -20,16 +20,23 @@ export default function Profile() {
           </span>
         </Link>
         <span>의미 있는 성장을 위해 나의 흔적을 기록하는 공간입니다.</span>
-        <div className="text-[12px] mt-4 flex">
-          <Link to="/profile/resume" className="flex mr-4">
+        <div className="text-[14px] flex">
+          <Link
+            to="/profile/resume"
+            className="flex items-center min-h-[44px] px-2"
+          >
             <span>이력서</span>
-            <ArrowUpRight className="size-[10px]"/>
+            <ArrowUpRight className="size-[12px] ml-1"/>
           </Link>
-          <Link to="/profile/portfolio" className="flex">
+          <Link
+            to="/profile/portfolio"
+            className="flex items-center min-h-[44px] px-2"
+          >
             <span>포트폴리오</span>
-            <ArrowUpRight className="size-[10px]"/>
+            <ArrowUpRight className="size-[12px] ml-1"/>
           </Link>
         </div>
+
       </div>
     </>
   )

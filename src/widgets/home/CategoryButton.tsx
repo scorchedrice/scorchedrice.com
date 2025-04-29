@@ -31,13 +31,15 @@ export default function CategoryButton({categoryName} : {categoryName: CategoryT
     isActive = '전체'
   }
   return (
-    <Button
-      className={clsx(
-        "bg-transparent border-none shadow-none h-auto text-base font-normal transition text-black dark:text-gray-300 hover:bg-transparent",
-        isActive === categoryName && "underline underline-offset-4"
-      )}
-    >
-      <Link to={categoryUrl}>{categoryName}</Link>
-    </Button>
+    <Link to={categoryUrl}>
+      <Button
+        className={clsx(
+          "bg-transparent border-none shadow-none h-auto text-base font-normal transition text-black dark:text-gray-300 hover:bg-transparent",
+          isActive === categoryName && "underline underline-offset-4"
+        )}
+      >
+        {categoryName}
+      </Button>
+    </Link>
   )
 }

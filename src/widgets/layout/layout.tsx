@@ -8,12 +8,13 @@ export default function Layout({ children } : { children : ReactNode }) {
   return (
     <>
       <nav className="sticky top-0 z-50 bg-background opacity-95 flex justify-between items-center w-[100dvw] mx-auto p-4 h-[50px] pt-4">
-        <Link to="/" className="flex items-center font-bold text-[24px]">
+        <Link to="/" className="flex items-center font-bold text-[24px] min-h-[44px]">
           <span>scorchedrice.com</span>
         </Link>
         <div className="flex items-center">
           <Link
             to="/search"
+            aria-label="Search Post"
           >
             <Search className="m-4"/>
           </Link>

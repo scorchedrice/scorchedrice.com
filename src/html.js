@@ -3,7 +3,7 @@ import "./global.css"
 
 export default function HTML(props) {
   return (
-    <html {...props.htmlAttributes} className={`${props.htmlAttributes.className ? props.htmlAttributes.className : ""}`}>
+    <html lang="ko" {...props.htmlAttributes} className={`${props.htmlAttributes.className ? props.htmlAttributes.className : ""}`}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

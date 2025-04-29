@@ -62,7 +62,7 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
                       })}
                     </div>
                   </div>
-                  <div className="text-[12px] font-light text-gray-500">{date} · {category}</div>
+                  <div className="text-[12px] font-light">{date} · {category}</div>
                 </div>
                 {
                   gatsby_image && (
