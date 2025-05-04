@@ -1,6 +1,4 @@
 import React from 'react';
-import ProjectBlock from "@/shared/ui/ProjectBlock";
-import {ProjectsType} from "@/shared/types/graphqlTypes";
 import ProjectBlocks from "@/widgets/portfolio/ProjectBlocks";
 
 const ProjectResume = () => {

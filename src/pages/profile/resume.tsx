@@ -4,11 +4,9 @@ import Layout from "@/widgets/layout/layout";
 import IntroResume from "@/widgets/resume/IntroResume";
 import SkillsResume from "@/widgets/resume/SkillsResume";
 import ProjectResume from "@/widgets/resume/ProjectResume";
-import {ProjectSectionQueryType} from "@/shared/types/graphqlTypes";
-import {graphql, HeadFC} from "gatsby";
+import {HeadFC} from "gatsby";
 
-const Resume = ({ data } : { data : ProjectSectionQueryType }) => {
-  const projects = data.allMdx.nodes
+const Resume = () => {
   return (
     <Layout>
       <IntroResume/>
