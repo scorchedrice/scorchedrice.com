@@ -6,42 +6,19 @@ import AboutSection from "@/widgets/portfolio/AboutSection";
 import SkillSection from "@/widgets/portfolio/SkillSection";
 import ArchiveSection from "@/widgets/portfolio/ArchiveSection";
 import ProjectSection from "@/widgets/portfolio/ProjectSection";
-import {graphql, HeadFC} from "gatsby";
-import {ProjectSectionQueryType} from "@/shared/types/graphqlTypes";
+import {HeadFC} from "gatsby";
 
-const Portfolio = ({ data } : { data : ProjectSectionQueryType }) => {
-  const projects = data.allMdx.nodes;
+const Portfolio = () => {
   return (
     <Layout>
       <IntroSection/>
       <AboutSection/>
       <SkillSection/>
       <ArchiveSection/>
-      <ProjectSection projects={projects} />
+      <ProjectSection/>
     </Layout>
   )
 }
-
-export const query = graphql`
-  query ProjectQuery {
-    allMdx(
-      filter: { frontmatter: { category: { eq: "프로젝트" } } }
-      sort: { frontmatter: { date: DESC } }
-    ) {
-      nodes {
-        id
-        frontmatter {
-          title
-          sub_title
-          tags
-          summary
-          slug
-          git_link
-        }
-      }
-    }
-  }
-`
 
 export default Portfolio
 

@@ -13,31 +13,10 @@ const Resume = ({ data } : { data : ProjectSectionQueryType }) => {
     <Layout>
       <IntroResume/>
       <SkillsResume/>
-      <ProjectResume projects={projects}/>
+      <ProjectResume/>
     </Layout>
   )
 }
-
-export const query = graphql`
-  query ProjectQuery {
-    allMdx(
-      filter: { frontmatter: { category: { eq: "프로젝트" } } }
-      sort: { frontmatter: { date: DESC } }
-    ) {
-      nodes {
-        id
-        frontmatter {
-          title
-          sub_title
-          tags
-          summary
-          slug
-          git_link
-        }
-      }
-    }
-  }
-`
 
 export default Resume
 

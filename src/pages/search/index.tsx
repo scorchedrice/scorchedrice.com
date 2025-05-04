@@ -4,7 +4,7 @@ import SearchLayout from "@/widgets/layout/searchLayout";
 import {useEffect, useState} from "react";
 import useSearchData from "@/features/useSearchData";
 import {GatsbyImage, getImage} from "gatsby-plugin-image";
-import {Link} from "gatsby";
+import {HeadFC, Link} from "gatsby";
 import {NoInput, SearchResultEmpty} from "@/widgets/search/SearchResult";
 import {useLocation} from "@reach/router";
 
@@ -13,7 +13,6 @@ type LocationState = {
 }
 
 const SearchIndexPage = () => {
-  // TODO : 처음에 창이 나올 때, 시간차를 둬서 깜빡이는 현상을 방지하자. setTimeout!
   const location = useLocation() as { state?: LocationState };
   const defaultValue = location.state?.defaultValue || "";
 
@@ -64,3 +63,7 @@ const SearchIndexPage = () => {
 }
 
 export default SearchIndexPage;
+
+export const Head: HeadFC = () => (
+  <title>scorchedrice - search</title>
+)
