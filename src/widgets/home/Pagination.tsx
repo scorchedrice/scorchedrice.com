@@ -14,7 +14,9 @@ export default function Pagination({ currentPage, totalPages, category }: Pagina
     if (isAll) {
       return page === 1 ? "/" : `/page/${page}`;
     }
-    return `/category/${category}/page/${page}`;
+    if (category === "개발") return `/category/develop/page/${page}`;
+    if (category === "프로젝트") return `/category/project/page/${page}`;
+    return `/404.html`;
   };
 
   return (
