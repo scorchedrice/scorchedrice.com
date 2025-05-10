@@ -129,7 +129,7 @@
   }
 
   .mdx-content img {
-    @apply max-w-full rounded-lg;
+    @apply rounded-lg max-w-full;
   }
 
   .mdx-content table {
