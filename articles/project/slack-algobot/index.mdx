@@ -1,17 +1,18 @@
 ---
-title: "알고리즘 보조 슬랙봇 - algoBot"
+title: "데브코스 슬랙봇"
 date: "2025-04-23"
 category: "프로젝트"
 tags: ["Bolt", "SlackBot"]
 slug: "slack-algobot"
 hero_image: "./slack-bot.png"
 hero_image_alt: "slack-algobot"
-git_link: "https://github.com/scorchedrice/slack-bot"
-sub_title: "데브코스 교육생들의 코딩테스트 대비를 돕기위한 슬랙봇"
-summary: ["자료구조에 따른 예시코드 제공 기능 개발", "조건에 적합한 알고리즘 문제 추천 기능 개발"]
+git_link: "https://github.com/hightuv/slack-bot"
+sub_title: "데브코스 교육생들을 위한 슬랙봇"
+summary: ["자료구조에 따른 예시코드 제공 기능 개발", "알고리즘 문제 추천 기능 개발"]
 ---
 
-import slackBotLogic1 from "./slack-bot-logic1.png";
+import command from "./algobot-command.png";
+import architecture from "./algobot-architecture.png";
 
 프로그래머스 데브코스 분들을 위한 슬랙봇을 개발한 과정을 소개하려고해요. 왜 이 프로젝트를 시작했는지부터, 어떤 방식으로 구현했는지 까지 소개할게요.
 
@@ -27,7 +28,8 @@ import slackBotLogic1 from "./slack-bot-logic1.png";
 
 ### 1. 프로젝트를 진행하게 된 이유
 
-프로젝트를 진행한 가장 큰 이유는 함께 교육을 수강하는 데브코스 수강생분들에게 도움을 주고싶어서에요. 저는 이 프로젝트에서 다음 두가지의 기능을 개발했는데, 이를 하나하나 설명드릴게요.
+프로젝트를 진행한 가장 큰 이유는 함께 교육을 수강하는 데브코스 수강생분들에게 도움을 주고싶어서에요.
+저는 이 프로젝트에서 다음 두가지의 기능을 개발했는데, 이를 하나하나 설명드릴게요.
 
 - 기초적인 알고리즘 샘플 코드 제공 (/sample-code [자료구조 이름])
 - 알고리즘 문제 추천 (/algobot [기능명])
@@ -81,13 +83,17 @@ import slackBotLogic1 from "./slack-bot-logic1.png";
 
 ### 2. 슬랙봇 구현과정
 
-슬랙봇의 구성은 크게 <u>**slack에서 입력한 슬래시 명령어를 처리하는 command**</u>, <u>**버튼 클릭과 같은 이벤트를 처리하는 handler**</u>, <u>**비즈니스 로직을 처리하는 service**</u>로 구성되어 있어요.
+<img src={architecture} alt="architecture" className="mx-auto"/>
+
+슬랙봇의 구성은 크게 **slack에서 입력한 슬래시 명령어를 처리하는 command**, **버튼 클릭과 같은 이벤트를 처리하는 handler**, **비즈니스 로직을 처리하는 service** 로 구성되어 있어요.
 
 #### 첫번째, 슬래시 명령어를 처리하는 과정
 
-<img src={slackBotLogic1} alt="test" className="mx-auto"/>
+<img src={command} alt="main-command" className="mx-auto"/>
 
 슬랙봇이 동작하는 과정 첫번째는 위의 이미지와 같아요. **main.js**는 슬랙봇의 명령어 진입 지점이라고 볼 수 있고, 진입한 이후엔 슬래시 명령어에 맞는 **command.js** 로직을 실행시켜요.
+
+command.js에선 해당 커맨드의 명령어를 분석하고 이에 맞는 처리를 수행해요.
 
 <details>
   <summary>예시코드 (command.js)</summary>
@@ -196,8 +202,4 @@ import slackBotLogic1 from "./slack-bot-logic1.png";
 
 ## 결론
 
-복잡한 기능은 아니였지만 함께 공부하는 데브코스분들을 위해 개발하고 서비스하는 과정이 너무나 즐거웠어요.
-
 평소 개발자가 갖춰야 하는 핵심역량이 문제를 인식하고 이를 해결하기 위해 기술에 구애받지 않고 추진할 수 있는 역량이라고 생각했는데, 이와 부합한 프로젝트였기에 더욱 가치있는 프로젝트라고 생각해요.
-
-제가 개발한 코드는 <a href="https://github.com/scorchedrice/slack-bot">여기</a>에서 확인하실 수 있으니 참고해보시면 좋을 것 같아요!
