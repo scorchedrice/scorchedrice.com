@@ -20,23 +20,29 @@ export default function Profile() {
           </span>
         </Link>
         <span>의미 있는 성장을 위해 나의 흔적을 기록하는 공간입니다.</span>
-        <div className="text-[14px] flex">
+        <div className="text-[14px] flex flex-wrap">
           <Link
-            to="/profile/resume"
-            className="flex items-center min-h-[44px] px-2"
+            to="/profile/portfolio"
+            className="flex items-center pt-2 px-2 shrink-0"
           >
-            <span>이력서</span>
+            <span>이력서/포트폴리오</span>
             <ArrowUpRight className="size-[12px] ml-1"/>
           </Link>
           <Link
-            to="/profile/portfolio"
-            className="flex items-center min-h-[44px] px-2"
+            to="https://my-profile-3u6.pages.dev/"
+            className="flex items-center pt-2 px-2 shrink-0"
           >
-            <span>포트폴리오</span>
+            <span>(구)포트폴리오</span>
+            <ArrowUpRight className="size-[12px] ml-1"/>
+          </Link>
+          <Link
+            to="https://scorchedrice.github.io/"
+            className="flex items-center pt-2 px-2 shrink-0"
+          >
+            <span>(구)블로그</span>
             <ArrowUpRight className="size-[12px] ml-1"/>
           </Link>
         </div>
-
       </div>
     </>
   )
