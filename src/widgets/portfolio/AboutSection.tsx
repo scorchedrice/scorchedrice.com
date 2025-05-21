@@ -53,7 +53,7 @@ const AboutSection = () => {
           </div>
           <div className="flex flex-col items-center p-4">
             <GraduationCap className="size-[32px]"/>
-            <div className="flex flex-col">
+            <div className="flex flex-col items-center">
               <span>삼성 청년 SW 아카데미</span>
               <span>홍익대학교 신소재공학과</span>
             </div>
