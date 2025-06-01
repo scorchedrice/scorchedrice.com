@@ -1,0 +1,156 @@
+---
+title: "[Docker] Nest + DB 띄워보기"
+date: "2025-06-01"
+category: "개발"
+tags: ["Docker"]
+slug: "docker-2"
+hero_image: "./docker-1.png"
+hero_image_alt: "docker_1.png"
+---
+
+도커로 Nest.js, MySQL, Redis를 동시에 띄우는 과정을 진행해보자. 이 과정을 통해 도커의 사용법 기초 지식을 습득해보자.
+
+## 목차
+
+- 도커를 학습하게 된 이유
+- 도커를 사용하는 이유 & 기본 지식
+- 도커 명령어
+- 도커 컴포스란
+- Nest 앱 이미지로 만들기
+- Compose 활용하여 여러개의 컨테이너 띄우기
+
+## 도커를 학습하게 된 이유
+
+최근 백엔드로 간단한 프로젝트 해보고 있다. 함께 진행하는 팀원분께서 MongoDB부터 모든 것을 도커로 싹 정리해두셨는데, 이해하기가 어려웠던 것이 가장 결정적 이유였다.
+
+또, 최근 컨테이너화 클라우드에 올리는 등 개발시장에서의 중요성이 많이 크다는 것을 알고있다. 따라서 이를 간단하게 다뤄보며 도커에 친숙해지기 위해 학습을 진행했어요.
+
+사실 완전 처음 사용하는 것은 아니다. 하지만, 혼자 백엔드를 학습할 때 DB를 편하게 띄우기 위해서 간단하게만 사용했던 것이지 이를 제대로 활용하지 못했다.
+이번 게시글에선 도커를 다루는 것만 해보고, 나중에 실제 서비스를 EC2로 말아서 올리는 작업까지 해볼까 한다.
+
+## 도커를 사용하는 이유 & 기본 지식
+
+도커를 사용하는 가장 큰 이유는 **이식성**이다.
+컨테이너는 쉽게말해 컴퓨터 안에 있는 고유한 컴퓨터라고 볼 수 있는데, 이와 같이 분리된 환경에서 동작할 수 있게 하여 이식성 부분에서 큰 장점을 지닌다.
+
+mac, window.. 상관없이 모두 동일하게 작업할 수 있는 환경을 만들 수 있다는 것이 큰 장점이다.
+
+### 컨테이너는 고유한 성질을 가진다.
+
+즉, 각 컨테이너에서 localhost는 자기 자신 컨테이너를 말하는 것이지 host를 말하는 것이 아니다.
+따라서, DB가 웹 애플리케이션 서버와 연결되어야한다면, 이를 주의해서 사용해야 한다.
+
+### 도커 컨테이너 동작 흐름
+
+1. 이미지를 받는다.
+2. 해당 이미지를 통해 컨테이너를 구성하고 실행한다.
+
+### 이미지
+
+도커를 사용하다보면 이미지라는 개념이 계속 등장한다. 이미지는 닌텐도의 칩이라고 생각하면 되는데, 쉽게말해 컨테이너에서 모든 정보가 담겨있는 칩을 사용하여 프로그램을 실행한다고 보면된다.
+
+MySQL을 사용하고 싶다면 MySQL이라는 이미지를 사용해서 컨테이너에서 실행하는 것, 이와 같은 과정이 도커를 사용하는 큰 흐름이다.
+
+### 볼륨
+
+도커 컨테이너는 기본적으로 정보가 변경될 때, 그 일부를 변경하는 것 아닌 통째로 교환하는 시스템을 적용한다.
+따라서 DB처럼 영속적인 정보 저장이 필요한 경우엔 문제가 발생할 수 있는데, 이 때 호스트의 저장 공간을 활용하여 영속성을 보장해주는 것이 볼륨이다.
+
+볼륨을 사용하는 방법은 다음과 같다.
+
+```shell
+docker run -v [HOST DIRECTORY]:[CONTAINER DIRECTORY] [IMAGE]
+```
+
+이 때 경로는 절대경로이다.
+
+## 도커 명령어
+
+### 이미지
+
+- 이미지 받기 : `docker pull [IMAGE NAME]`
+
+- 이미지 조회 : `docker image ls`
+
+- 이미지 삭제 : `docker image rm [IMAGE ID]`
+
+참고로 사용하지 않는 이미지 전체 삭제와 같은 경우는 `docker image rm -f $(docker images -q)`
+
+### 컨테이너
+
+- 컨테이너 생성 : `docker create [IMAGE]`
+- 컨테이너 조회 : `docker ps`
+- 컨테이너 전체 조회 : `docker ps -a`
+- 컨테이너 실행 : `docker start [CONTAINER ID]`
+- 컨테이너 생성 후 실행 : `docker run [IMAGE]`
+- 컨테이너 강제종료 : `docker kill [CONTAINER ID]`
+- 중지되어있는 컨테이너 종료 : `docker rm $(docker ps -qa)`
+- 로그 조회 : `docker logs [CONTAINER ID]`
+- 실행중인 컨테이너 내부 shell 진입 : `docker exec -it [CONTAINER ID] bash`
+
+이 때 포그라운드가 아닌 백그라운드 실행을 원하면 `-d`, 실행 종료후 삭제를 원하면 `-f`, 포트 매핑이 필요하면 `-p [HOST PORT]:[CONTAINER PORT]`, 이름 지정 후 실행을 원하면 `--name`.. 많은 명령어가 있으니 필요할 때 마다 찾아 사용하자.
+
+## 도커 컴포스란
+
+도커 컴포스는 쉽게말해 여러개의 컨테이너를 동시에 관리할 수 있는 수단이다. 위에서 사용한 방식이라면 하나하나 컨테이너를 실행하고 해야했지만, Docker Compose를 사용하면 이와 같은 것들을 한번에 해결할 수 있다.
+
+또, depends_on, healthcheck로 의존 관계를 고려한 컨테이너 실행이 가능해 상당히 유용하다.
+
+## Nest 앱 이미지 만들기
+
+우선 기본적인 nest 애플리케이션을 만들었다. localhost:3000으로 접속하면 Hello world를 나타내는 애플리케이션이다.
+
+```dockerfile
+FROM node
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm install
+
+RUN npm run build
+
+EXPOSE 3000
+
+ENTRYPOINT ["node", "dist/main.js"]
+```
+
+위 내용은 node 이미지로 부터 컨테이너를 구성하고, `/app`를 작업디렉토리로 설정한 뒤 nest를 설치하고 3000 포트에서 접속 가능하도록 하겠다는 뜻을 지닌다.
+
+이와 같은 방식으로 Dockerfile을 작성하고, 다음의 명령어를 사용하여 이미지를 빌드했다.
+
+```shell
+docker build -t my-nest .
+```
+
+이 과정을 통해 my-nest라는 이미지를 만들었다. 이제, 이 이미지를 활용하여 compose 파일을 작성해보자.
+
+## Compose 활용하여 여러개의 컨테이너 띄우기
+
+Redis, MySQL을 동시에 띄어보기로 헀다. 다음처럼 파일을 구성하고 docker compose up --build -d 명령어를 통해 여러개의 컨테이너를 띄웠다.
+
+```yaml
+services:
+  my-nest:
+    image: my-nest
+    ports:
+      - 3000:3000
+    depends_on:
+      - my-db
+      - my-cache-server
+  my-db:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password1234
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    ports:
+      - 3306:3306
+  my-cache-server:
+    image: redis
+    ports:
+      - 6379:6379
+```
+
+여기서 nest는 mysql, redis가 모두 띄워진 상태에서만 띄울 수 있도록 depends_on을 사용했다.
