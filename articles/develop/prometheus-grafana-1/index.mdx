@@ -1,0 +1,151 @@
+---
+title: "Prometheus와 Grafana를 활용한 모니터링 체계 구축"
+date: "2025-06-09"
+category: "개발"
+tags: ["Prometheus", "Grafana", "Docker", "AWS"]
+slug: "prometheus-grafana"
+hero_image: "./prometheus_grafana.png"
+hero_image_alt: "prometheus_grafana.png"
+---
+
+import EC2Containers from "./ec2-containers.png";
+import UbuntuLog from "./ubuntu_log.png";
+import GrafanaExample from "./grafana_example.png";
+
+Prometheus와 Grafana를 활용해서 모니터링 시스템을 구축하고 이를 EC2 환경에 올려보자.
+
+[작업을 진행한 레포지토리](https://github.com/qtree0/chat-app)
+
+## 목차
+
+- Prometheus? Grafana?
+- 적용 과정 및 결과
+
+## Prometheus? Grafana?
+
+둘다 모니터링을 위해 사용되는 오픈소스이다. 쉽게 `Prometheus`로 정보를 수집하고, 이를 `Grafana`로 시각화 한다고 생각하면 된다.
+
+### Prometheus
+
+주로 시계열 데이터를 수집하고 저장하기 위한 모니터링 시스템이다. 서버의 성능, 이용 현황, 리소스 사용량 등을 수집하는 데 사용된다.
+
+대상 서버로부터 주기적으로 데이터를 가져오고, `PromQL`이라는 쿼리 언어를 활용한 데이터 수집이 가능하다.
+
+### Grafana
+
+데이터 수집에 특화된 도구이다. Prometheus 등 다양한 데이터 소스로부터 정보를 가져오고 대시보드 형태로 시각화하는 기능을 제공한다.
+
+## 적용 과정 및 결과
+
+나는 모든 과정에 도커를 활용했다. 올릴 Express 서버, Grafana, Prometheus를 각각 컨테이너로 만들어서 다음과 같은 구조의 서비스를 구성했다.
+
+<img src={EC2Containers} className="mx-auto" alt="EC2 Containers"/>
+
+<details>
+  <summary>compose.yml</summary>
+  ```yml
+  services:
+    chat-express:
+      image: chat_app_250609
+      ports:
+        - 3000:3000
+    prometheus:
+      image: prom/prometheus
+      volumes:
+        - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      ports:
+      - 9090:9090
+    grafana:
+      image: grafana/grafana
+      ports:
+        - 3001:3000
+  volumes:
+  - grafana-storage:/var/lib/grafana
+
+  volumes:
+    grafana-storage:
+  ```
+</details>
+
+### Express에 Prometheus 연결하기
+
+`Prometheus`는 `Express`로부터 정보를 수집한다. 그렇기에 이를 등록하는 과정을 진행해야한다.
+
+정보 수집과 관련된 코드를 metrics.js에 저장하고 이를 app이 구동될 때 실행되도록 기능을 구현했다.
+
+```js
+// metrics/metrics.js
+import * as client from "prom-client"
+
+const collectDefaultMetrics = client.collectDefaultMetrics;
+
+collectDefaultMetrics();
+
+export const httpRequestDurationMicroseconds = new client.Histogram({
+  name: 'http_request_duration_ms',
+  help: 'Duration of HTTP requests in ms',
+  labelNames: ['method', 'route', 'code'],
+  buckets: [50, 100, 200, 300, 400, 500, 1000]
+});
+
+export const connectedSocketsGauge = new client.Gauge({
+  name: 'socket_connected_clients',
+  help: 'Number of currently connected WebSocket clients'
+});
+
+export const register = client.register;
+```
+
+```js
+// express의 동작을 관리하는 server.js 일부
+
+// 소켓 연결 관련
+connectedSocketsGauge.set(0); // 우선 0으로 설정
+// 소켓 연결 처리
+io.on('connection', (socket) => {
+  connectedSocketsGauge.inc();
+  socketHandler(io, socket); // 실제 이벤트는 socket/index.js에서 처리
+});
+
+// 요청 시간 측정 미들웨어
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    httpRequestDurationMicroseconds
+      .labels(req.method, req.route?.path || req.path, res.statusCode)
+      .observe(duration);
+  });
+  next();
+});
+
+// /metrics에서 프로메테우스를 확인할 수 있도록
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+})
+```
+
+### Grafana에 Prometheus 연결하기
+
+`Grafana`를 `Docker`로 띄우고 데이터 소스에서 `Prometheus`를 선택한 뒤 `http://prometheus:9090`으로 연결한 후 확인하면 된다.
+
+이 때 `localhost:9090`로 URL을 설정하는 실수를 하지 않아야한다. 물론 local에서 동작시키면 문제없겠지만, 나같은 경우엔 docker로 환경을 구성해서 기능을 구현했다.
+
+각 컨테이너는 각기 다른 PC라고 생각하면된다. 즉, `Grafana`이미지를 동작하는 컨테이너의 localhost와 `Prometheus`를 다루는 컨테이너의 localhost는 다르단 것이다.
+
+`Docker`가 이들의 연결을 지원하기에 컨테이너의 이름을 주소에 입력하여 연결하도록 한다.
+
+
+연결한 이후엔 대시보드를 구성하면 된다.
+
+express에 추가적으로 설정한 쿼리문을 포함하여 promQL 자료를 확인하며 대시보드를 구성할 수 있다.
+
+나같은 경우엔 메모리 사용량, 웹소켓 접속 인원을 대시보드로 구성했다.
+
+### 실행 결과
+
+<img src={UbuntuLog} alt="ubuntu_log.png" className="mx-auto"/>
+
+<img src={GrafanaExample} alt="grafana_example.png" className="mx-auto"/>
+

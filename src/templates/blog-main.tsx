@@ -54,7 +54,7 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
                   <div>
                     <h1 className="text-[16px] md:text-[20px] font-bold mb-2">{title}</h1>
                     <span className="text-[12px] md:text-[14px]">{excerpt}</span>
-                    <div className="flex my-2">
+                    <div className="flex my-2 flex-wrap">
                       {tags.map((tag : string) => {
                         return (
                           <TagButton key={tag} tagName={tag}/>
