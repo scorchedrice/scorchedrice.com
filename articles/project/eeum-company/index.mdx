@@ -7,15 +7,15 @@ slug: "eeum-company"
 hero_image: "./eeum_logo.png"
 hero_image_alt: "eeum-logo"
 git_link: ""
-sub_title: "출장 세차 서비스를 중심적으로 제공하는 스타트업, 이음컴퍼니의 브랜드페이지 (현재 진행중)"
-summary: ["API route를 활용한 백엔드 기능", "Vercel에 배포, Neon PostgreSQL 활용", "협업툴과 연동되는 상담예약 시스템 개발 진행중"]
+sub_title: "출장 세차 서비스를 중심적으로 제공하는 스타트업, 이음컴퍼니의 브랜드페이지"
+summary: ["API route를 활용한 백엔드 기능", "Vercel, Neon PostgreSQL", "상담예약 & 관리자 페이지"]
 ---
 
 import serviceRegion from "./service-region.gif";
 import apiRouteRender from "./api-route-render.png";
-import consult from "./consult.gif";
+import consultVideo from "./consult_video.mp4"
 
-청주, 오산을 중심으로 출장 세차 서비스를 제공하는 스타트업 <a href="https://eeum.company">'이음컴퍼니'의 브랜드페이지</a> 개발 과정을 소개합니다.
+출장 세차 서비스를 제공하는 <a href="https://eeum.company">'이음컴퍼니'의 웹서비스</a> 개발 과정을 소개합니다.
 
 <hr/>
 
@@ -24,6 +24,7 @@ import consult from "./consult.gif";
 <ul>
   <li>구현과정</li>
   <li>트러블슈팅</li>
+  <li>성과</li>
 </ul>
 
 <hr/>
@@ -32,17 +33,19 @@ import consult from "./consult.gif";
 
 이 서비스의 핵심 기능은 다음과 같아요.
 
-- 이음컴퍼니의 서비스 지역 안내
-- API route as Backend (기능 구현 완료)
-- 상담 예약 (개발 진행 예정)
+- 이음컴퍼니 홍보
+- API route as Backend
+- 상담 예약 & 관리자 페이지
 
 <br/>
 
-### 첫번째, 이음컴퍼니의 서비스 지역 안내
+### 첫번째, 이음컴퍼니 홍보
+
+이음컴퍼니의 서비스 소개, 가격표 등을 확인할 수 있도록 구현했어요.
 
 <img src={serviceRegion} alt="service-region.gif" className="mx-auto"/>
 
-대한민국 지도를 svg파일 컴포넌트로 제작하여, 서비스 진행중인 구역은 색상, hover 효과가 동작하도록 기능을 구현했어요.
+서비스 지역 같은 경우엔 Intercept, Parallel route 활용하고 대한민국 지도를 svg파일 컴포넌트로 제작하여, 서비스 진행중인 구역은 색상, hover 효과가 동작하도록 기능을 구현했어요.
 
 hover 여부는 Zustand의 상태관리를 활용하여 행정구역 텍스트와 지도간 연동을 구현했어요.
 
@@ -54,14 +57,19 @@ hover 여부는 Zustand의 상태관리를 활용하여 행정구역 텍스트�
 나중에 사업이 확장되고 이벤트, 문의 게시판 등의 섹션이 추가될 것을 고려하여 Vercel에서 공식적으로 지원하는 서버리스 DB, Neon을 도입했어요.
 또, DB에 프론트엔드가 직접 접근하는 것은 의도치 않은 DB 접근을 발생시킬 수 있기에 api route를 활용하여 기능을 구현했어요.
 
-### 세번째, 상담 예약
+### 세번째, 상담 예약 & 관리자 페이지
 
-<img src={consult} alt="consult.gif" className="mx-auto"/>
+<video
+  controls
+  width="800"
+>
+  <source src={consultVideo} type="video/mp4"/>
+</video>
 
-`shadcn/ui`의 Form 태그와 `react-hook-form`을 활용하여 유효성 판단 기능을 구현했고, `react-daum-postcode` 라이브러리 활용하여 주소값을 입력할 수 있도록 기능을 구현했어요.
-입력을 완료한 이후엔 Drawer로 한번 더 확인할 수 있도록하고 전송하면 이음컴퍼니의 협업툴에 전송되어 담당자가 연락을 할 수 있도록 기능을 구현할 예정이에요.
+`shadcn/ui`의 Form 태그와 `react-hook-form`의 `useForm`을 활용하여 유효성 판단 기능을 구현했고, `react-daum-postcode` 라이브러리 활용하여 주소값을 입력할 수 있도록 기능을 구현했어요.
+개인정보 수집 관련 내용을 알리는 pdf 뷰어와 마지막 제출 직전의 정보를 다시확인하는 과정을 Drawer 활용하여 구현했습니다.
 
-아직 이음컴퍼니의 협업툴이 정해지지 않았어요. 플로우, 네이버웍스, 슬랙 등 어떤 것이 선택될지 모르기에 연결하는 과정은 아직 구현하지 않았어요.
+이 과정으로 신청한 상담을 관리자가 해당 지역 담당자에게 전달할 수 있도록 관리자 페이지를 개발했어요. JWT 토큰 활용해서 로그인을 하고, 관리자만 접속 가능하도록 해당 기능을 구현했어요.
 
 ## 2. 트러블슈팅
 
@@ -70,3 +78,7 @@ hover 여부는 Zustand의 상태관리를 활용하여 행정구역 텍스트�
 초기엔 Cloudflare의 workers를 활용했어요. 다만, 정적 플렛폼 배포에 특화되어있고, global scope에 비동기 로직을 선언하는 것의 제한 때문에 동적라우팅과 api route 활용이 제한되었어요.
 
 따라서 Nextjs의 공식 배포플랫폼인 Vercel로 배포플랫폼을 변경하고, 공식적으로 지원하는 Neon을 api route 활용하여 서비스를 개발했어요.
+
+## 3. 성과
+
+실제 사용되는 서비스를 개발해본 경험을 할 수 있어 기뻐요. 이걸 정말 사용할까 싶었는데, 매주 3-4명의 사용자들이 상담을 신청해주시고 계시네요. 개발자로 커리어를 준비하고 있는데, 이 경험이 자극제가 된 것 같습니다!
