@@ -10,6 +10,9 @@ module.exports = {
   	],
   theme: {
   	extend: {
+			textColor: {
+				'fill-white-30': 'rgba(255,255,255,0.3)',
+			},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
@@ -61,7 +64,17 @@ module.exports = {
   },
   plugins: [
 	  require("tailwindcss-animate"),
-	  require("@tailwindcss/typography")
+	  require("@tailwindcss/typography"),
+		function ({addUtilities}) {
+			addUtilities(
+				{
+					'.text-fill-white-30': {
+						'-webkit-text-fill-color': 'rgba(255,255,255,0.3)',
+						'-webkit-background-clip': 'text'
+					}
+				}
+			)
+		}
   ],
 }
 

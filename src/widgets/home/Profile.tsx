@@ -22,17 +22,17 @@ export default function Profile() {
         <span>의미 있는 성장을 위해 나의 흔적을 기록하는 공간입니다.</span>
         <div className="text-[14px] flex flex-wrap">
           <Link
-            to="/profile/portfolio"
+            to="/resume"
             className="flex items-center pt-2 px-2 shrink-0"
           >
-            <span>이력서/포트폴리오</span>
+            <span>이력서</span>
             <ArrowUpRight className="size-[12px] ml-1"/>
           </Link>
           <Link
             to="https://my-profile-3u6.pages.dev/"
             className="flex items-center pt-2 px-2 shrink-0"
           >
-            <span>(구)포트폴리오</span>
+            <span>포트폴리오</span>
             <ArrowUpRight className="size-[12px] ml-1"/>
           </Link>
           <Link

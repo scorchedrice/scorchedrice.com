@@ -8,17 +8,9 @@ import node from "@/shared/svg/skill/node";
 import react from "@/shared/svg/skill/react";
 import tailwindcss from "@/shared/svg/skill/tailwindcss";
 import typescript from "@/shared/svg/skill/typescript";
-
-type SkillNameType =
-  "electron"|
-  "gatsby"|
-  "javascript"|
-  "nest"|
-  "next"|
-  "node"|
-  "react"|
-  "tailwindcss"|
-  "typescript";
+import flutter from "@/shared/svg/skill/flutter";
+import reactnative from "@/shared/svg/skill/reactnative";
+import {SkillNameType} from "@/shared/types/skillTypers";
 
 const skillMap = {
   electron,
@@ -30,9 +22,12 @@ const skillMap = {
   react,
   tailwindcss,
   typescript,
+  flutter,
+  reactnative,
 }
 
-export default function Skill({ skillName }: { skillName: SkillNameType }) {
+export default function Skill({ size = 30, skillName }: { size?: number, skillName:
+  SkillNameType }) {
   const SkillSVG = skillMap[skillName];
-  return SkillSVG ? <div className="size-[30px] m-4"><SkillSVG /></div> : null;
+  return SkillSVG ? <div style={{ width: size, height: size }}><SkillSVG /></div> : null;
 }
