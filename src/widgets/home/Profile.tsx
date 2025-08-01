@@ -32,7 +32,7 @@ export default function Profile() {
             to="https://my-profile-3u6.pages.dev/"
             className="flex items-center pt-2 px-2 shrink-0"
           >
-            <span>포트폴리오</span>
+            <span>(구)포트폴리오</span>
             <ArrowUpRight className="size-[12px] ml-1"/>
           </Link>
           <Link
