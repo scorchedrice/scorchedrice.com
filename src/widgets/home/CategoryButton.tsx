@@ -14,6 +14,9 @@ export default function CategoryButton({categoryName} : {categoryName: CategoryT
     case "프로젝트":
       categoryUrl = "/category/project/page/1"
       break;
+    case "일상":
+      categoryUrl = "/category/daily/page/1"
+      break;
     default:
       categoryUrl = "/"
       break;
@@ -26,6 +29,8 @@ export default function CategoryButton({categoryName} : {categoryName: CategoryT
       isActive = '개발'
     } else if (path[2] === 'project') {
       isActive = '프로젝트'
+    } else if (path[2] === 'daily') {
+      isActive = '일상'
     }
   } else {
     isActive = '전체'

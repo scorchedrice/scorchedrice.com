@@ -29,6 +29,7 @@ const BlogPageTemplate: React.FC<PageProps<any, BlogPageContext>> = ({data, page
             <CategoryButton categoryName="전체"/>
             <CategoryButton categoryName="개발"/>
             <CategoryButton categoryName="프로젝트"/>
+            <CategoryButton categoryName="일상"/>
           </div>
           <Separator/>
           {/*여기서부터 리스트로 포스트를 표시하는 공간.*/}

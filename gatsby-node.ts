@@ -48,10 +48,11 @@ export const createPages : GatsbyNode["createPages"] = async ({ graphql, actions
   const posts = results.data.allMdx.nodes;
   const postsPerPage = 5;
   const categoryMap: Record<string, typeof posts> = {};
-  const targetCategories = ["전체", "개발", "프로젝트"];
+  const targetCategories = ["전체", "개발", "프로젝트", "일상"];
   const categoryUrl = {
     "개발": "develop",
     "프로젝트": "project",
+    "일상": "daily",
   }
 
   for (const category of targetCategories) {
