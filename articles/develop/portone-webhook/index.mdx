@@ -1,0 +1,288 @@
+---
+title: "PortOne V2 웹훅 시스템 구축기"
+date: "2025-12-02"
+category: "개발"
+tags: ["Portone", "Webhook", "Ruby on Rails"]
+slug: "portone-webhook"
+hero_image: "./thumbnail.png"
+hero_image_alt: "portone-webhook"
+---
+
+import PaymentWebhook from "./payment_webhook.png";
+
+> **결제 시스템의 신뢰성을 높이기 위한 비동기 웹훅 설계와 구현 과정**
+
+안녕하세요, KOA의 결제 시스템을 구현하면서, 작업한 웹훅 구현 과정과, 그 과정에서 마주친 **Race Condition** 문제를 어떻게 해결했는지 공유하고자 합니다.
+
+---
+
+## 왜 웹훅이 필요했나?
+
+### 기존 방식의 문제점
+
+처음에는 결제 성공 페이지에서 **동기적으로 PortOne API를 검증**하는 방식을 사용했습니다:
+
+```ruby
+# 기존 방식 (payment_success 액션)
+def payment_success
+  payment_key = params[:paymentKey]
+
+  # 문제: 동기적 검증 서비스 호출
+  # payment_id를 바탕으로 portone측에 정보를 요청 후 화폐, 금액 등을 직접 확인하는 로직
+  verify_result = PortoneService.new.confirm_payment(
+    payment_id: payment_key,
+    order_name: order_name,
+    amount: amount
+  )
+
+  if verify_result[:success]
+    # 결제 성공 처리
+  else
+    # 실패 처리
+  end
+end
+```
+
+쉽게 생각하면
+
+사용자의 결제 → 결제 응답 → 검증 과정을 동기적으로 진행했습니다. 하지만 이 과정은 문제가 많았습니다.
+
+**문제점들**:
+
+1. **느린 응답 속도**
+
+- 검증하는 것을 대기해야하기에 사용자가 결제 이후 화면을 보기까지의 시간이 너무 길다.
+
+2. **해외 결제의 특수성**
+
+- 일본 측 결제를 도입하기 위해 Paypal을 도입했는데, Paypal의 경우 `PAY_PENDING`과 같은 결제 대기상태가 존재함.
+  - 실제로 테스트 도중 `PAY_PENDING` 상태가 발생하여 결제는 되었지만 신청자 명단에 들어가지 않는 치명적 오류가 발생했다. `PAID` 상태인 경우에 신청하도록 기능을 구현하여 발생한 문제였다.
+
+따라서, 사용자 경험을 개선하고, 결제 상태를 명확하게 반영하기 위해 **웹훅**을 도입했습니다.
+
+### 웹훅 기반 비동기 처리로 전환
+
+이를 해결하기 위해 `낙관적 업데이트` 형태로 기능을 구현했습니다.
+
+쉽게 설명하면 다음의 흐름으로 기능이 동작한다고 말할 수 있습니다.
+
+1. 사용자가 결제를 완료하면 `payment_success` 액션을 호출
+2. `payment_success` 액션에서 결제를 즉시 저장 (이 때 `IN_PROGRESS` 상태로 설정 및 참여자 명단에 추가)
+3. 사용자에게 결제 처리 중 페이지 렌더링
+4. 웹훅으로 정보를 받고, `FAILED` 혹은 `CANCELLED`의 경우 참여자 명단에서 제외 후 상태 업데이트, `PAID`의 경우 명단 유지 후 상태업데이트
+
+이 과정을 통해 사용자들에게 빠른 응답을 줄 수 있었고, 결제 상태의 최종 일관성을 보장할 수 있었습니다.
+
+자세한 구현 과정은 아래에서 서술하겠습니다.
+
+# 구현 과정과 문제 해결 과정
+
+## 1단계: 웹훅 서명 검증 구현
+
+### HMAC-SHA256 서명 검증
+
+웹훅은 누구나 보낼 수 있기 때문에, **진짜 PortOne에서 온 요청인지 검증**이 필수입니다.
+
+`JavaScript`, `Python`, `JVM`의 경우 관련 SDK를 제공하지만, `Ruby`의 경우 SDK가 없어 직접 구현했습니다.
+
+구현할 때 [Standard Webhooks](https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md)를 참고했습니다.
+
+```ruby
+# app/services/webhook_service.rb
+class WebhookService
+  def verify_portone_webhook!(payload:, webhook_id:, webhook_signature:, webhook_timestamp:)
+    # 1. 서명 생성에 사용된 원본 문자열 재구성
+    signed_content = "#{webhook_id}.#{webhook_timestamp}.#{payload}"
+
+    # 2. 시크릿 키 디코딩 (whsec_ 프리픽스 제거)
+    secret = ENV['PORTONE_WEBHOOK_SECRET'].sub("whsec_", "")
+    decoded_secret = Base64.decode64(secret)
+
+    # 3. HMAC-SHA256으로 서명 계산
+    expected_signature = Base64.strict_encode64(
+      OpenSSL::HMAC.digest("SHA256", decoded_secret, signed_content)
+    )
+
+    # 4. 전달받은 서명과 비교
+    received_signature = webhook_signature.sub("v1,", "").split(",").first.strip
+
+    unless ActiveSupport::SecurityUtils.secure_compare(expected_signature, received_signature)
+      raise WebhookError, "서명 검증 실패"
+    end
+    # ...
+  end
+end
+```
+
+---
+
+## 2단계: Race Condition 이슈 발생 및 해결
+
+### 문제 발견
+
+웹훅 시스템을 배포하자마자 이상한 로그가 보이기 시작했습니다:
+
+```log
+18:26:20 | Started POST "/webhooks/portone"           ← 웹훅 도착
+18:26:20 | Started GET ".../payment_success"          ← 거의 동시에!
+18:26:20 | [Webhook] Payment를 찾을 수 없음             ← 에러!
+18:26:20 | TRANSACTION (2.1ms) COMMIT TRANSACTION      ← 나중에 커밋
+```
+
+웹훅 결과가 더 빨리 도착했기에 서버에 저장된 결제기록을 확인할 수 없는 문제가 발생했습니다. 하나하나 보면 다음과 같습니다.
+
+1. **PortOne은 결제 승인 즉시 웹훅 발송** (지연 설정 불가)
+2. **사용자 리다이렉트도 거의 동시에 발생**
+3. **웹훅이 너무 빨리 도착** → Payment 아직 생성 전!
+4. **Rails 트랜잭션 격리** → 커밋 전까지 다른 요청에서 안 보임
+
+실제로 웹훅 결과를 100% 신뢰하기보단, 한번 더 검증하는 과정이 필요합니다. 포트원에서도 이를 권장하고 있습니다. [포트원 웹훅 자료](https://developers.portone.io/opi/ko/integration/webhook/readme-v2?v=v2)
+
+---
+
+## 해결책: PortOne 자동 재시도 활용
+
+평소 `sleep`, `setInterval`과 같은 실제 시간차이를 주는 방식을 사용하기보단, 논리적인 방식으로 개발하는 것이 좋다 생각하고 있어 최대한 이를 피하는 방향으로 개발을 진행했습니다.
+
+따라서, 웹훅의 재발송 기능을 활용하기로 했습니다.
+
+포트원 웹훅의 경우 400 등의 에러가 발생한다면 아래의 정책에 따라 정보를 재전송한다는 것을 확인했습니다.
+
+### PortOne 웹훅 재시도 정책
+
+```
+0 → 1 → 4 → 16 → 64 → 256분, 총 5회까지 재전송
+```
+
+웹훅에서 Payment를 못 찾으면 **에러를 반환**하여 PortOne이 재시도하도록 유도했습니다.
+
+```ruby
+def handle_paid(data)
+  payment_id = data["paymentId"]
+  payment = Payment.find_by(payment_id: payment_id)
+
+  unless payment
+    Rails.logger.error "[Webhook] Payment를 찾을 수 없음. #{payment_id}"
+    raise WebhookError, "Payment not found: #{payment_id}"  # 에러 반환
+  end
+
+  # 중복 처리 방지
+  if payment.payment_in_progress? || payment.payment_ready?
+    payment.update!(status: "DONE", approved_at: Time.current)
+    Rails.logger.info "[Webhook] 결제 완료 처리 성공: #{payment_id}"
+  else
+    Rails.logger.warn "[Webhook] 이미 처리된 결제: #{payment_id}"
+  end
+end
+```
+
+**결과**:
+
+- 웹훅이 먼저 도착하는 경우 에러 반환
+- PortOne이 자동 재시도 후 최종 결과 반영
+
+---
+
+## 3단계: 낙관적 업데이트 + Rollback
+
+### 참가자 수 증가 로직
+
+결제가 성공하면 즉시 참가자 수를 증가시켜야 합니다. 하지만 실패할 경우 참가자 수를 증가시키지 않아야 합니다.
+
+사용자 경험을 개선하고 결제 시도 순서대로 파티 신청이 가능하도록 하기위해 다음 과정을 통해 낙관적 업데이트를 도입했습니다.
+
+```ruby
+# payment_success 액션에서 즉시 증가
+def payment_success
+  ActiveRecord::Base.transaction do
+    @application = PartyApplication.create!(...)
+    # 결제 처리중 상태로 생성
+    @payment = @application.create_payment!(status: "IN_PROGRESS")
+
+    # 우선 결제가 정상일 것이라는 가정 하에 참가자 수 증가
+    if current_user.gender == "male"
+      @party_post.increment!(:male_current)
+    else
+      @party_post.increment!(:female_current)
+    end
+  end
+
+  render :payment_success  # "결제 처리 중..."
+end
+```
+
+**결제가 실패하면?** → **Rollback 필요!**
+
+```ruby
+# webhook_service.rb, PORTONE 응답이 "Transaction.Failed" 인 경우 실행
+def handle_failed(data)
+  payment_id = data["paymentId"]
+  payment = Payment.find_by(payment_id: payment_id)
+
+  return unless payment
+
+  # IN_PROGRESS만 처리
+  if payment.payment_in_progress?
+    ActiveRecord::Base.transaction do
+      # 1. Payment 상태 업데이트
+      payment.update!(status: "FAILED")
+
+      # 2. 참가자 수 감소 (Rollback)
+      party_application = payment.payable
+      party_post = party_application.party_post
+
+      # 롤백
+      if party_application.user.gender == "male"
+        party_post.decrement!(:male_current)
+      else
+        party_post.decrement!(:female_current)
+      end
+
+      Rails.logger.info "[Webhook] 인원수 복구 완료: #{party_post.id}"
+    end
+  end
+end
+```
+
+**핵심 개념: Eventual Consistency**
+
+- 결제 진행 (최종 결과 모름): 파티 참여 인원 증가
+  - 결제 실패: 파티 참여 인원 감소 (복구)
+  - 결제 성공: 유지
+- 최종 일관성 보장!
+
+---
+
+## 최종 결과
+
+<img src={PaymentWebhook} alt="payment-webhook" className="mx-auto" />
+
+### Before (동기 검증)
+
+```
+사용자 결제
+    ↓
+PortOne API로 결제 진행
+    ↓
+PortOne API로 결제 검증
+    ↓
+DB 저장
+    ↓
+결제 성공 페이지
+```
+
+### After (웹훅)
+
+```
+사용자 결제 완료
+    ↓
+DB 저장 (IN_PROGRESS)
+    ↓
+결제 처리 중 페이지
+
+(백그라운드) 웹훅 도착 → DONE 업데이트
+```
+
+**개선 효과**:
+
+- 응답 속도 개선: 2-3초 개선, 사용자 즉시 피드백으로 UX 개선
