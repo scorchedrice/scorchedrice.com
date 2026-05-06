@@ -28,6 +28,13 @@ export default function Profile() {
             <span>이력서</span>
             <ArrowUpRight className="size-[12px] ml-1"/>
           </Link>
+          <Link
+            to="/map"
+            className="flex items-center pt-2 px-2 shrink-0"
+          >
+            <span>맵</span>
+            <ArrowUpRight className="size-[12px] ml-1"/>
+          </Link>
           {/* <Link
             to="https://my-profile-3u6.pages.dev/"
             className="flex items-center pt-2 px-2 shrink-0"
