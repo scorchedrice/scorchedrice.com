@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#0b1220"/>
+  <g opacity=".18" stroke="#64748b" stroke-width="1">
+    <path d="M0 100h1600M0 200h1600M0 300h1600M0 400h1600M0 500h1600M0 600h1600M0 700h1600M0 800h1600"/>
+    <path d="M100 0v900M200 0v900M300 0v900M400 0v900M500 0v900M600 0v900M700 0v900M800 0v900M900 0v900M1000 0v900M1100 0v900M1200 0v900M1300 0v900M1400 0v900M1500 0v900"/>
+  </g>
+  <text x="110" y="145" fill="#f8fafc" font-family="Arial, sans-serif" font-size="58" font-weight="700">Flutter Social Login</text>
+  <text x="114" y="195" fill="#94a3b8" font-family="Arial, sans-serif" font-size="24">WebView · Native SDK · Server Session</text>
+  <path d="M260 480H500M1100 480h240" stroke="#fb7185" stroke-width="8" stroke-dasharray="18 14"/>
+  <path d="M790 300V220M790 660v80" stroke="#22d3ee" stroke-width="8" stroke-dasharray="18 14"/>
+  <rect x="120" y="340" width="360" height="280" rx="24" fill="#102a3a" stroke="#22d3ee" stroke-width="4"/>
+  <text x="180" y="420" fill="#67e8f9" font-family="Arial, sans-serif" font-size="31" font-weight="700">WebView</text>
+  <text x="180" y="475" fill="#e2e8f0" font-family="Arial, sans-serif" font-size="22">login request</text>
+  <text x="180" y="515" fill="#94a3b8" font-family="Arial, sans-serif" font-size="20">returnTo 검증</text>
+  <text x="180" y="555" fill="#94a3b8" font-family="Arial, sans-serif" font-size="20">HttpOnly cookie</text>
+  <rect x="610" y="290" width="360" height="380" rx="24" fill="#17332f" stroke="#34d399" stroke-width="4"/>
+  <text x="660" y="380" fill="#6ee7b7" font-family="Arial, sans-serif" font-size="31" font-weight="700">Flutter Bridge</text>
+  <text x="660" y="440" fill="#e2e8f0" font-family="Arial, sans-serif" font-size="22">Kakao · Naver</text>
+  <text x="660" y="480" fill="#e2e8f0" font-family="Arial, sans-serif" font-size="22">Google · Apple</text>
+  <text x="660" y="540" fill="#94a3b8" font-family="Arial, sans-serif" font-size="20">cancel / timeout</text>
+  <text x="660" y="580" fill="#94a3b8" font-family="Arial, sans-serif" font-size="20">diagnostic stages</text>
+  <rect x="1120" y="340" width="360" height="280" rx="24" fill="#302044" stroke="#a78bfa" stroke-width="4"/>
+  <text x="1180" y="420" fill="#c4b5fd" font-family="Arial, sans-serif" font-size="31" font-weight="700">Server</text>
+  <text x="1180" y="475" fill="#e2e8f0" font-family="Arial, sans-serif" font-size="22">token 검증</text>
+  <text x="1180" y="515" fill="#94a3b8" font-family="Arial, sans-serif" font-size="20">session sync</text>
+  <text x="1180" y="555" fill="#94a3b8" font-family="Arial, sans-serif" font-size="20">web session 발급</text>
+  <circle cx="790" cy="220" r="22" fill="#22d3ee"/><circle cx="790" cy="740" r="22" fill="#fb7185"/>
+  <text x="120" y="790" fill="#64748b" font-family="Arial, sans-serif" font-size="20">A practical record from eeum and Granite</text>
+</svg>

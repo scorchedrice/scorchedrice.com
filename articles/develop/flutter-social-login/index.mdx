@@ -1,0 +1,331 @@
+---
+title: "Flutter 하이브리드 앱에서 소셜 로그인을 붙이며 배운 것"
+date: "2026-07-17"
+category: "개발"
+tags: ["Flutter", "WebView", "소셜 로그인", "OAuth"]
+slug: "flutter-social-login"
+hero_image: "./thumbnail.png"
+hero_image_alt: "Flutter WebView, 네이티브 SDK, 서버 세션의 연결 구조"
+---
+
+import EeumFlow from "./eeum-flow.png";
+import GraniteFlow from "./granite-flow.png";
+
+Flutter로 웹앱을 감싼 하이브리드 앱을 만들면서 소셜 로그인을 붙일 일이 있었다.
+
+처음에는 간단하게 생각했다.
+
+> 소셜 로그인 SDK를 호출하고, 토큰을 웹에 넘기면 끝나는 것 아닌가?
+
+그런데 실제로는 로그인 버튼 하나 뒤에 플랫폼별 SDK, WebView, 서버 세션, 앱과 웹 사이의 통신 규약이 모두 들어갔다. 이 글은 `eeum` 앱과 `Granite` 앱에서 구현한 코드를 다시 보면서, 어떤 구조를 선택했고 무엇을 조심해야 했는지 정리한 글이다.
+
+## 웹 로그인과 네이티브 로그인의 경계
+
+Granite의 초기 설계는 Flutter가 로그인까지 소유하지 않는 방향이었다. 앱은 WebView를 열고, 로그인 화면과 OAuth callback은 웹앱이 처리한다.
+
+```text
+Flutter 앱 시작
+  ↓
+WebView에서 /app 열기
+  ↓
+서버가 세션 쿠키 확인
+  ├─ 로그인 상태 → /me
+  └─ 로그아웃 상태 → /login?returnTo=/me
+  ↓
+웹 OAuth callback
+  ↓
+HttpOnly 세션 쿠키 발급
+```
+
+처음에는 이 흐름만으로 충분하다고 생각했다. 하지만 앱에서 네이티브 소셜 로그인을 지원하려고 하니, 웹 로그인과 앱 로그인 사이에 명확한 경계와 통신 규약이 필요해졌다.
+
+## 두 앱에서 달랐던 세션 연결 방식
+
+`eeum` 앱은 Firebase를 중간 세션으로 사용했고, `Granite` 앱은 provider token을 웹 서버의 native session endpoint로 보내 HttpOnly 웹 세션을 발급하는 방향으로 구현했다.
+
+<img src={EeumFlow} alt="eeum 앱의 소셜 로그인과 Firebase 웹 세션 동기화 흐름" className="mx-auto" />
+
+`Granite`에서는 WebView가 브리지 메시지를 보내고, Flutter가 네이티브 SDK를 호출한 뒤 서버의 세션 endpoint를 호출하는 흐름으로 확장했다.
+
+<img src={GraniteFlow} alt="Granite 앱의 WebView 네이티브 로그인 브리지와 세션 발급 흐름" className="mx-auto" />
+
+## eeum은 로그인 버튼 하나로 끝나지 않았다
+
+`eeum` 쪽은 이미 네이티브 로그인을 붙였다는 이유만으로 끝나지 않았다. 실제 커밋 기록을 따라가 보면, 로그인 흐름을 붙인 뒤에도 플랫폼 callback, 중복 세션 정리, 멈춤 복구, 진단 로그를 계속 수정했다.
+
+### 1. Naver iOS callback을 앱까지 전달하기
+
+iOS에서 Naver 로그인 화면을 열었다가 앱으로 돌아와도 SDK callback이 이어지지 않는 문제가 있었다. Flutter 코드만 고치는 것으로 끝나는 문제가 아니라, `SceneDelegate`에서 URL을 받아 Flutter 앱 delegate 쪽으로 다시 전달해야 했다.
+
+```swift
+override func scene(
+  _ scene: UIScene,
+  openURLContexts URLContexts: Set<UIOpenURLContext>
+) {
+  super.scene(scene, openURLContexts: URLContexts)
+
+  // Naver callback URL을 앱 delegate로 전달
+}
+```
+
+여기서 Kakao용 URL scheme과 Naver용 URL scheme을 구분하고, 앱에 등록된 scheme만 전달하도록 했다. 소셜 로그인은 provider SDK 호출 코드만 보고는 완료 여부를 판단하기 어렵고, OS의 callback 진입점까지 함께 확인해야 한다는 것을 알게 된 부분이다.
+
+### 2. callback이 오지 않아 로그인 화면이 멈추는 문제
+
+Naver SDK의 로그인 메서드가 반환하는 `Future`만 기다리면 callback이 오지 않는 상황에서 화면이 계속 대기할 수 있었다. 그래서 callback의 성공·실패·예외를 `Completer`로 감싸고, 일정 시간 안에 결과가 오지 않으면 timeout으로 종료하도록 바꿨다.
+
+현재 eeum 코드에는 provider 로그인 전체에 기본 90초 timeout이 있고, Naver callback에도 별도의 timeout 처리가 있다. 실패를 SDK의 원문 메시지로 전달하지 않고 다음처럼 진단 코드로 정리했다.
+
+- `naver-native-login-cancelled`
+- `naver-native-login-timeout`
+- `naver-native-app-not-installed`
+- `naver-native-oauth-unauthorized-client`
+- `native-firebase-sign-in-failed`
+- `native-session-sync-failed`
+
+이렇게 바꾸고 나서야 “로그인 버튼을 눌렀는데 아무 일도 일어나지 않는” 상황을 취소, callback 지연, SDK 설정 오류, 서버 세션 오류로 나눠 볼 수 있게 됐다.
+
+### 3. logout과 login이 겹치는 race 피하기
+
+로그아웃 직후 사용자가 바로 다시 로그인을 누르면, 이전 세션을 지우는 비동기 작업과 새 로그인 작업이 동시에 실행될 수 있었다. 그러면 새 로그인 결과를 적용한 직후 이전 세션 정리가 실행될 가능성이 생긴다.
+
+이를 막기 위해 세션 정리 작업을 `Future<void>?`로 보관하고, 이미 정리 중인 작업이 있으면 같은 Future를 기다리도록 수정했다. 새 로그인 요청도 pending clear가 끝난 뒤 실행되게 했다.
+
+```dart
+final pendingClear = _nativeSessionClearFuture;
+
+if (pendingClear != null) {
+  await pendingClear;
+}
+
+final result = await _nativeSocialAuthService.login(request);
+```
+
+로그인 기능에서 race condition은 provider SDK 안에서만 생기는 것이 아니었다. WebView lifecycle과 native session cleanup의 순서도 함께 관리해야 했다.
+
+### 4. refresh token은 안전한 저장소로 분리하기
+
+Firebase 세션을 복원하려면 refresh token이 필요하지만, 이를 일반적인 앱 상태나 WebView JavaScript에 넣어두면 안 된다. eeum에서는 `flutter_secure_storage`를 감싼 `NativeAuthSessionStore`를 두고 refresh token을 읽고, 저장하고, 삭제하는 책임을 분리했다.
+
+빈 token을 저장하지 않고 기존 값을 지우며, 로그아웃 시에는 secure storage의 값도 함께 삭제한다. WebView에는 refresh token을 전달하지 않고, 필요한 경우 native 계층에서 Firebase 세션을 복원한 뒤 웹 세션 동기화를 수행한다.
+
+### 5. 진단 로그를 추가하되 SDK 원문은 남기지 않기
+
+문제를 추적하려면 어느 provider의 어느 단계에서 실패했는지 서버에서 확인할 수 있어야 했다. 그렇다고 SDK가 반환한 원문 오류나 token을 그대로 전송하면 안 된다.
+
+eeum은 `providerId`, `stage`, `platform`, 허용된 진단 코드, 필요할 때의 HTTP status 정도만 error report payload에 담는다. 허용 목록에 없는 오류는 구체적인 메시지 대신 runtime type으로 축약한다. release 빌드에는 로컬 auth trace channel이나 상세 stage log가 남지 않는지도 테스트로 확인한다.
+
+결국 eeum에서의 수정은 “소셜 로그인 SDK를 연결했다”에서 끝나지 않았다.
+
+1. OS callback을 앱으로 되돌리고
+2. callback을 Future로 변환하고
+3. timeout으로 멈춤을 복구하고
+4. logout/login 순서를 직렬화하고
+5. refresh token 저장을 격리하고
+6. 민감정보 없는 진단 체계를 만들고
+7. 각 경계면을 fake client와 source-level test로 검증했다.
+
+이 과정을 거치면서 소셜 로그인은 버튼 기능이 아니라, provider·OS·Flutter·WebView·서버 세션이 만나는 작은 분산 시스템에 가깝다는 생각이 들었다.
+
+이 방식은 구조가 단순하다. 웹과 브라우저의 로그인 흐름을 공유할 수 있고, Flutter가 access token을 따로 보관하지 않아도 된다. 반대로 WebView 안에서 특정 OAuth 제공자의 동작이 제한되거나, 앱에서만 제공할 수 있는 로그인 경험이 필요해지면 한계가 생긴다.
+
+그래서 native login을 추가하더라도 역할을 섞지 않는 것이 중요했다.
+
+- Flutter: 네이티브 SDK 호출과 WebView 컨테이너 관리
+- 웹앱: 사용자 계정, 웹 세션, 로그인 이후 화면
+- 서버: provider token 검증과 HttpOnly 세션 발급
+
+Flutter가 WebView에 token을 심어 세션처럼 사용하도록 만들지는 않았다. 앱 세션과 웹 세션을 무작정 하나로 합치기보다, 서버가 검증할 수 있는 짧은 요청으로 연결하는 편이 안전하다.
+
+## 소셜 로그인은 provider별로 다르게 생겼다
+
+Granite 앱에는 Kakao, Naver, Google, Apple 로그인을 위한 서비스가 각각 분리되어 있다. 공통 인터페이스는 단순하지만, SDK를 호출하는 내부 동작은 provider마다 다르다.
+
+```dart
+abstract interface class NativeSocialLoginService {
+  Future<NativeSocialLoginResult> login(
+    NativeSocialLoginRequest request,
+  );
+}
+```
+
+### Kakao: 앱 설치 여부에 따른 fallback
+
+KakaoTalk이 설치되어 있으면 앱 로그인을 먼저 시도하고, 설치되어 있지 않으면 Kakao 계정 로그인을 사용한다. 앱 로그인에 실패했을 때 계정 로그인으로 전환하는 fallback도 필요했다.
+
+```dart
+if (!await client.isKakaoTalkInstalled()) {
+  return client.loginWithKakaoAccount();
+}
+
+try {
+  return await client.loginWithKakaoTalk();
+} catch (_) {
+  return client.loginWithKakaoAccount();
+}
+```
+
+여기서 중요한 점은 “SDK 메서드를 호출할 수 있다”와 “사용자가 로그인을 완료했다”가 다르다는 것이다. 취소와 실패를 구분하지 않으면 사용자가 취소했는데도 일반 오류 화면을 보여주게 된다.
+
+### Naver: callback과 token 조회를 따로 다뤄야 했다
+
+Naver SDK는 로그인 결과를 callback으로 전달한다. 그래서 `Completer`로 callback을 `Future`로 감싸고, 로그인 성공 이후 access token을 다시 조회하는 단계를 둔다.
+
+```dart
+final loggedIn = await _loginWithNaverSdkCallback();
+
+if (!loggedIn) {
+  throw const NativeSocialAuthException(
+    'naver-native-login-cancelled',
+  );
+}
+
+final accessToken = await NaverLoginSDK.getAccessToken();
+```
+
+이 과정에서 timeout도 필요하다. callback이 오지 않으면 로그인 화면이 끝나지 않은 채 대기할 수 있기 때문이다. 실제 오류를 그대로 사용자에게 노출하기보다는, 앱에서는 취소·설정 오류·SDK 오류처럼 안전한 진단 코드로 정리하는 편이 좋다.
+
+### Google: usable token을 명확히 확인해야 했다
+
+Google 로그인은 access token 또는 id token 중 하나라도 실제로 반환되었는지 확인해야 한다. 로그인 API가 성공적으로 끝났다는 사실만으로 서버가 사용할 token이 존재한다고 가정하면 안 된다.
+
+```dart
+if (accessToken.isEmpty && (idToken == null || idToken.isEmpty)) {
+  throw const NativeSocialLoginException(
+    'Google native login returned no usable token.',
+  );
+}
+```
+
+### Apple: iOS와 Android의 흐름이 다르다
+
+Apple 로그인은 iOS에서 끝나는 기능으로 생각하기 쉽지만, Android에서는 Web Authentication 설정이 추가로 필요하다.
+
+- iOS: Sign in with Apple entitlement 설정
+- Android: Service ID 설정
+- Android: redirect URI 설정
+- Android: callback activity와 URL scheme 등록
+
+특히 Android 설정이 빠지면 코드가 있어도 실제 callback으로 돌아오지 못한다. Granite에서는 `APPLE_SERVICE_ID`, `APPLE_REDIRECT_URI`를 별도 설정으로 받고, 둘 중 하나라도 없으면 로그인 시도 전에 명확하게 실패하도록 했다.
+
+## 토큰을 WebView 세션으로 바꾸는 과정
+
+provider SDK에서 받은 token을 그대로 WebView에 주입하는 대신, Granite에서는 WebView가 네이티브에 로그인 요청을 보내고 Flutter가 서버의 세션 endpoint를 호출한다.
+
+```text
+WebView
+  → auth.native.login.requested
+  → Flutter가 native SDK 호출
+  → provider token 획득
+  → POST /api/auth/native/session
+  → 서버가 token 검증
+  → HttpOnly 웹 세션 발급
+  → WebView가 로그인 결과 반영
+```
+
+브리지 메시지에는 provider와 이동할 경로만 전달하고, `returnTo`는 반드시 내부 경로인지 검사한다.
+
+```dart
+if (!value.startsWith('/') || value.startsWith('//')) {
+  return null;
+}
+
+return value;
+```
+
+외부 URL을 그대로 redirect 대상으로 허용하면 로그인 이후의 open redirect 문제가 생길 수 있다. 로그인 기능은 인증 자체만큼이나 “로그인 후 어디로 이동할 것인가”를 검증해야 한다.
+
+서버 요청은 form-urlencoded 형식으로 만들고, URL은 앱에 하드코딩하지 않고 설정에서 주입한다.
+
+```dart
+final form = <String, String>{
+  'provider': request.provider,
+  if (request.accessToken.isNotEmpty)
+    'accessToken': request.accessToken,
+  if (request.idToken != null && request.idToken!.isNotEmpty)
+    'idToken': request.idToken!,
+  if (request.returnTo != null) 'returnTo': request.returnTo!,
+};
+```
+
+반면 `eeum` 앱은 Firebase를 중간 세션으로 사용하는 구조다. 네이티브 provider credential을 서버 endpoint에서 Firebase custom token으로 교환하고, Firebase sign-in과 웹 세션 동기화를 순서대로 수행한다.
+
+```text
+native provider login
+  ↓
+token exchange
+  ↓
+Firebase custom token sign-in
+  ↓
+Firebase ID token으로 웹 세션 동기화
+  ↓
+refresh token 저장
+```
+
+두 앱의 구현은 다르지만, 공통된 방향은 분명했다. **네이티브 SDK의 결과를 WebView에 직접 넘기는 것이 아니라, 서버가 검증하고 웹 세션을 발급하도록 만든다**는 것이다.
+
+## 로그인 전체를 하나의 try-catch로 감싸지 않기
+
+로그인은 한 번의 함수 호출처럼 보이지만 실제로는 여러 단계로 나뉜다.
+
+1. provider SDK 로그인
+2. provider token 획득
+3. 서버 token 교환 또는 검증
+4. Firebase 로그인 또는 웹 세션 동기화
+5. refresh token 저장
+6. WebView 이동
+
+이 단계를 하나의 `try-catch`로만 처리하면 어디에서 실패했는지 알 수 없다. Granite에서는 provider 로그인과 session sync를 각각 진단 단계로 기록하고, eeum에서는 `provider_login`, `token_exchange`, `firebase_sign_in`, `session_sync`, `refresh_token_save`처럼 단계를 나눠 실패를 보고한다.
+
+로그에는 token, cookie, authorization header, 이메일 같은 민감한 값을 남기지 않아야 한다. 디버깅을 위해 로그를 추가하더라도 “어떤 provider의 어떤 단계에서 실패했는가” 정도만 남기는 것이 안전하다.
+
+## 로그인 취소도 실패와 다르다
+
+사용자가 로그인 창을 닫은 것은 서버 오류가 아니다. 그런데 SDK의 예외를 모두 같은 오류로 처리하면 사용자 경험이 어색해진다.
+
+그래서 코드에서는 다음을 구분한다.
+
+- 사용자가 직접 취소한 경우
+- provider 앱이 설치되지 않은 경우
+- SDK 초기화나 client 설정이 잘못된 경우
+- callback이 오지 않아 timeout이 발생한 경우
+- 서버 session sync가 실패한 경우
+
+이 구분은 단순한 문구 차이만을 위한 것이 아니다. 취소는 재시도 안내를 보여줄 수 있고, 설정 오류는 개발자 진단이 필요하며, session sync 실패는 네이티브 로그인은 성공했지만 웹 로그인으로 이어지지 않은 상태이기 때문이다.
+
+## 테스트는 SDK보다 경계면을 검증한다
+
+실제 KakaoTalk이나 Naver 앱을 매번 실행하는 테스트를 만들기보다, provider client를 추상화하고 fake client를 주입했다.
+
+```dart
+class FakeNaverNativeLoginClient
+    implements NaverNativeLoginClient {
+  // login 결과와 access token을 테스트에서 제어한다.
+}
+```
+
+이렇게 하면 다음과 같은 경계면을 빠르게 검증할 수 있다.
+
+- 로그인 성공 시 token을 반환하는가
+- 로그인 취소 시 취소 예외로 변환하는가
+- 빈 token을 성공으로 처리하지 않는가
+- 지원하지 않는 provider를 거부하는가
+- Android Apple callback activity와 URL scheme이 등록되어 있는가
+- WebView 브리지가 실패 메시지를 웹으로 보내는가
+
+소셜 로그인은 외부 SDK, OS 설정, provider 콘솔, 서버 callback이 모두 연결된 기능이라서 단위 테스트만으로 끝나지는 않는다. 그래도 각 경계면을 분리해두면 실제 기기에서 문제가 발생했을 때 원인을 좁히기가 훨씬 쉬워진다.
+
+## 마무리
+
+Flutter에서 WebView 기반 웹앱에 소셜 로그인을 추가하는 일은 로그인 버튼을 네이티브 버튼으로 바꾸는 작업이 아니었다.
+
+- 웹 세션과 앱 세션의 소유자를 먼저 정하고
+- provider별 SDK 차이를 감싸고
+- token은 WebView에 직접 주입하지 않고 서버에서 검증하고
+- 브리지 메시지와 redirect 경로를 검증하고
+- 로그인 단계를 나눠 진단하고
+- 취소·실패·설정 오류를 구분해야 했다.
+
+처음부터 모든 provider와 플랫폼을 완벽하게 지원하려고 하기보다, 웹 로그인으로 시작해 필요한 지점에 native bridge를 추가하는 방식이 현실적이었다. 다만 native login을 추가하는 순간부터는 앱 코드만의 문제가 아니라 **웹앱, 서버, provider 콘솔, iOS·Android 설정을 함께 관리하는 문제**가 된다.
+
+결국 가장 오래 남는 것은 특정 SDK의 사용법보다, 각 시스템의 경계를 어디에 둘 것인지 결정하는 일이었다.

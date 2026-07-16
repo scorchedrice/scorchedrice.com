@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760">
+  <rect width="1600" height="760" fill="#0b1220"/>
+  <text x="90" y="100" fill="#f8fafc" font-family="Arial, sans-serif" font-size="44" font-weight="700">eeum · Firebase session flow</text>
+  <text x="92" y="140" fill="#94a3b8" font-family="Arial, sans-serif" font-size="21">Native provider credential becomes a web session through Firebase</text>
+  <g stroke="#475569" stroke-width="5" fill="none">
+    <path d="M330 380H470M710 380H850M1090 380H1230"/>
+  </g>
+  <g fill="#f8fafc">
+    <path d="M470 380l-24-14v28z" fill="#fb7185"/><path d="M850 380l-24-14v28z" fill="#fb7185"/><path d="M1230 380l-24-14v28z" fill="#fb7185"/>
+  </g>
+  <rect x="80" y="270" width="250" height="220" rx="20" fill="#102a3a" stroke="#22d3ee" stroke-width="4"/>
+  <text x="125" y="350" fill="#67e8f9" font-family="Arial, sans-serif" font-size="28" font-weight="700">Provider SDK</text>
+  <text x="125" y="400" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="20">Kakao / Naver</text>
+  <text x="125" y="435" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="20">Apple</text>
+  <rect x="470" y="270" width="240" height="220" rx="20" fill="#302044" stroke="#a78bfa" stroke-width="4"/>
+  <text x="515" y="350" fill="#c4b5fd" font-family="Arial, sans-serif" font-size="28" font-weight="700">Exchange</text>
+  <text x="515" y="400" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="20">custom token</text>
+  <text x="515" y="435" fill="#94a3b8" font-family="Arial, sans-serif" font-size="18">server endpoint</text>
+  <rect x="850" y="270" width="240" height="220" rx="20" fill="#17332f" stroke="#34d399" stroke-width="4"/>
+  <text x="895" y="350" fill="#6ee7b7" font-family="Arial, sans-serif" font-size="28" font-weight="700">Firebase</text>
+  <text x="895" y="400" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="20">ID token</text>
+  <text x="895" y="435" fill="#94a3b8" font-family="Arial, sans-serif" font-size="18">refresh token</text>
+  <rect x="1230" y="270" width="290" height="220" rx="20" fill="#3b2530" stroke="#fb7185" stroke-width="4"/>
+  <text x="1275" y="350" fill="#fda4af" font-family="Arial, sans-serif" font-size="28" font-weight="700">Web Session</text>
+  <text x="1275" y="400" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="20">session sync</text>
+  <text x="1275" y="435" fill="#94a3b8" font-family="Arial, sans-serif" font-size="18">WebView cookie</text>
+  <text x="90" y="640" fill="#64748b" font-family="Arial, sans-serif" font-size="20">login stages: provider_login → token_exchange → firebase_sign_in → session_sync → refresh_token_save</text>
+</svg>
